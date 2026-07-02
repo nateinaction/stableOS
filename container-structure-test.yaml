@@ -18,41 +18,36 @@ fileExistenceTests:
     path: '/usr/lib/systemd/system/flathub-setup.service'
     shouldExist: true
 
-fileContentTests:
-  - name: '/opt redirects to /usr/lib/opt'
-    path: '/opt'
-    excludedOutput: ['.*']
-    isSymlink: true
-
 commandTests:
+  - name: '/opt is a symlink to /usr/lib/opt'
+    command: 'test'
+    args: ['-L', '/opt']
+    exitCode: 0
   - name: 'tailscale is installed'
     command: 'command'
     args: ['-v', 'tailscale']
-    excludedOutput: ['.*']
     exitCode: 0
   - name: 'fish is installed'
     command: 'command'
     args: ['-v', 'fish']
-    excludedOutput: ['.*']
     exitCode: 0
   - name: 'chezmoi is installed'
     command: 'command'
     args: ['-v', 'chezmoi']
-    excludedOutput: ['.*']
     exitCode: 0
   - name: 'fish is registered in /etc/shells'
     command: 'grep'
     args: ['-qx', '/usr/bin/fish', '/etc/shells']
-    excludedOutput: ['.*']
     exitCode: 0
-
-systemdTests:
   - name: 'tailscaled.service is enabled'
-    unit: 'tailscaled.service'
-    state: enabled
+    command: 'systemctl'
+    args: ['is-enabled', 'tailscaled.service']
+    exitCode: 0
   - name: 'bootc-fetch-apply-updates.timer is enabled'
-    unit: 'bootc-fetch-apply-updates.timer'
-    state: enabled
+    command: 'systemctl'
+    args: ['is-enabled', 'bootc-fetch-apply-updates.timer']
+    exitCode: 0
   - name: 'flathub-setup.service is enabled'
-    unit: 'flathub-setup.service'
-    state: enabled
+    command: 'systemctl'
+    args: ['is-enabled', 'flathub-setup.service']
+    exitCode: 0
