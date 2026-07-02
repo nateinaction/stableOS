@@ -1,0 +1,3 @@
+ignore:
+  # dnf5 version pinning is impractical in bootc images; packages come from OS repos
+  - DL3041
