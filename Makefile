@@ -31,8 +31,8 @@ help: ## Display this help
 ##@ Development
 
 .PHONY: build
-build: ## Build container image with podman
-	podman build \
+build: podman ## Build container image with podman
+	$(PODMAN) build \
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
@@ -75,13 +75,13 @@ test-container-structure: build container-structure-test ## Run container struct
 ##@ Cleanup
 
 .PHONY: clean
-clean: ## Remove built container image
-	podman rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
-	podman rmi localhost/$(IMAGE_NAME):$(IMAGE_TAG) || true
+clean: podman ## Remove built container image
+	$(PODMAN) rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
+	$(PODMAN) rmi localhost/$(IMAGE_NAME):$(IMAGE_TAG) || true
 
 .PHONY: clean-all
 clean-all: clean ## Remove all stableos images
-	podman rmi $$(podman images -q $(IMAGE_NAME)) || true
+	$(PODMAN) rmi $$($(PODMAN) images -q $(IMAGE_NAME)) || true
 
 ##@ Build Dependencies
 
@@ -98,6 +98,7 @@ OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 HADOLINT ?= $(LOCALBIN)/hadolint-$(HADOLINT_VERSION)
 ACTIONLINT ?= $(LOCALBIN)/actionlint-$(ACTIONLINT_VERSION)
 CONTAINER_STRUCTURE_TEST ?= $(LOCALBIN)/container-structure-test-$(CONTAINER_STRUCTURE_TEST_VERSION)
+PODMAN ?= $(LOCALBIN)/podman-$(PODMAN_VERSION)/podman
 UV_DIR ?= $(LOCALBIN)/uv-$(UV_VERSION)
 UV ?= $(UV_DIR)/uv
 UVX ?= $(UV_DIR)/uvx
@@ -106,6 +107,7 @@ UVX ?= $(UV_DIR)/uvx
 HADOLINT_VERSION ?= latest
 ACTIONLINT_VERSION ?= latest
 CONTAINER_STRUCTURE_TEST_VERSION ?= latest
+PODMAN_VERSION ?= latest
 UV_VERSION ?= 0.11.26
 
 .PHONY: hadolint
@@ -143,6 +145,28 @@ $(CONTAINER_STRUCTURE_TEST): $(LOCALBIN)
 	@test -s $(CONTAINER_STRUCTURE_TEST) || { \
 		curl -o $(CONTAINER_STRUCTURE_TEST) -L https://github.com/GoogleContainerTools/container-structure-test/releases/latest/download/container-structure-test-$(OS)-$(ARCH) && \
 		chmod +x $(CONTAINER_STRUCTURE_TEST); \
+	}
+
+.PHONY: podman
+podman: $(PODMAN) ## Download podman locally if necessary
+
+$(PODMAN): $(LOCALBIN)
+	@test -s $(PODMAN) || { \
+		mkdir -p "$$(dirname $(PODMAN))"; \
+		if [ "$(OS)" = "darwin" ]; then \
+			PODMAN_ARCH=$$([ "$(ARCH)" = "arm64" ] && echo "arm64" || echo "amd64"); \
+			RELEASE_URL=$$(curl -sL https://api.github.com/repos/podman-container-tools/podman/releases/latest | grep -o "https[^\"]*podman-remote-release-darwin_$$PODMAN_ARCH.zip" | head -1); \
+			if [ -z "$$RELEASE_URL" ]; then \
+				echo "Failed to find podman release for macOS"; exit 1; \
+			fi; \
+			curl -o /tmp/podman.zip -L "$$RELEASE_URL" && \
+			unzip -q /tmp/podman.zip -d "$$(dirname $(PODMAN))" && \
+			find "$$(dirname $(PODMAN))" -name podman -type f -exec mv {} $(PODMAN) \; && \
+			chmod +x $(PODMAN) && \
+			rm /tmp/podman.zip; \
+		else \
+			echo "podman download for linux not yet supported"; exit 1; \
+		fi; \
 	}
 
 .PHONY: uv
