@@ -1,6 +1,9 @@
 # bootc-image-builder output
 output/
 
+# Build artifacts and downloaded tools
+build/
+
 # Editor and IDE cruft
 .vscode/
 .idea/

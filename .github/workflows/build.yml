@@ -51,15 +51,11 @@ jobs:
           image: stableos
           tags: test
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Run image structure tests
+        uses: GoogleContainerTools/container-structure-test-action@v2.1.1
         with:
-          go-version: '1.22'
-          cache: true
-          cache-dependency-path: tests/go.sum
-
-      - name: Run image introspection tests
-        run: IMG=localhost/stableos:test go test ./tests/ -v
+          image: localhost/stableos:test
+          config: container-structure-test.yaml
 
       - name: Login to GHCR
         uses: redhat-actions/podman-login@v1

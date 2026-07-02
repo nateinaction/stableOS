@@ -1,0 +1,58 @@
+schemaVersion: '2.0.0'
+
+metadataTest:
+  labels:
+    - key: title
+      value: stableOS
+    - key: description
+      value: 'Custom Fedora bootc COSMIC desktop environment'
+
+fileExistenceTests:
+  - name: 'COSMIC skeleton config exists'
+    path: '/etc/skel/.config/cosmic/shell.ron'
+    shouldExist: true
+  - name: 'Fish skeleton config exists'
+    path: '/etc/skel/.config/fish/config.fish'
+    shouldExist: true
+  - name: 'Flathub setup service exists'
+    path: '/usr/lib/systemd/system/flathub-setup.service'
+    shouldExist: true
+
+fileContentTests:
+  - name: '/opt redirects to /usr/lib/opt'
+    path: '/opt'
+    excludedOutput: ['.*']
+    isSymlink: true
+
+commandTests:
+  - name: 'tailscale is installed'
+    command: 'command'
+    args: ['-v', 'tailscale']
+    excludedOutput: ['.*']
+    exitCode: 0
+  - name: 'fish is installed'
+    command: 'command'
+    args: ['-v', 'fish']
+    excludedOutput: ['.*']
+    exitCode: 0
+  - name: 'chezmoi is installed'
+    command: 'command'
+    args: ['-v', 'chezmoi']
+    excludedOutput: ['.*']
+    exitCode: 0
+  - name: 'fish is registered in /etc/shells'
+    command: 'grep'
+    args: ['-qx', '/usr/bin/fish', '/etc/shells']
+    excludedOutput: ['.*']
+    exitCode: 0
+
+systemdTests:
+  - name: 'tailscaled.service is enabled'
+    unit: 'tailscaled.service'
+    state: enabled
+  - name: 'bootc-fetch-apply-updates.timer is enabled'
+    unit: 'bootc-fetch-apply-updates.timer'
+    state: enabled
+  - name: 'flathub-setup.service is enabled'
+    unit: 'flathub-setup.service'
+    state: enabled
