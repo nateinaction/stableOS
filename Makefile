@@ -36,6 +36,14 @@ build: podman ## Build container image with podman
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
+output/bootiso/install.iso: build podman ## Build bootable ISO for installation
+	$(PODMAN) run --rm -it --privileged \
+		--security-opt label=type:unconfined_t \
+		-v ./output:/output \
+		-v /var/lib/containers/storage:/var/lib/containers/storage \
+		quay.io/centos-bootc/bootc-image-builder:latest \
+		--type iso --local $(IMAGE_NAME):$(IMAGE_TAG)
+
 ##@ Linting and Formatting
 
 .PHONY: pre-commit-install
@@ -56,12 +64,13 @@ lint-workflows: actionlint ## Lint GitHub Actions workflows
 
 .PHONY: lint-fish
 lint-fish: ## Check fish config syntax
+	@# TODO(nateinaction): Download fish binary directly when MacOS builds are available in Github
+	@# which is suppoesed to be soon according to the fish-shell release page: https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
 	fish --no-execute files/skel/.config/fish/config.fish
 
 .PHONY: lint-toml
 lint-toml: uv ## Parse config.toml
-	$(UVX) tomli-w --help >/dev/null 2>&1 || $(UVX) pip install tomli-w
-	$(UVX) python3 -c "import tomllib; tomllib.loads(open('config.toml').read())"
+	$(UVX) tombi format
 
 ##@ Testing
 

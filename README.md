@@ -11,20 +11,13 @@ stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:43`, providin
 Build the image with podman:
 
 ```bash
-podman build -t stableos .
+make
 ```
-
-## Producing an Installation ISO
 
 To create a bootable ISO for installing stableOS on a new machine:
 
 ```bash
-podman run --rm -it --privileged \
-  --security-opt label=type:unconfined_t \
-  -v ./output:/output \
-  -v /var/lib/containers/storage:/var/lib/containers/storage \
-  quay.io/centos-bootc/bootc-image-builder:latest \
-  --type iso --local ghcr.io/nateinaction/stableos:latest
+make output/bootiso/install.iso
 ```
 
 The ISO will be written to `output/bootiso/install.iso`.
