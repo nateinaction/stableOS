@@ -1,0 +1,12 @@
+# bootc-image-builder configuration
+# Used for non-interactive disk images (raw/qcow2)
+# The Anaconda ISO installer is interactive, so this is optional
+
+[[customizations.user]]
+name = "user"
+description = "Default user"
+groups = ["wheel"]
+# To add an SSH key, specify:
+# key = "ssh-rsa AAAA..."
+# To use a password hash, specify:
+# password_hash = "..." (generated via: mkpasswd --method=yescrypt)

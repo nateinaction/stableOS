@@ -1,0 +1,10 @@
+# bootc-image-builder output
+output/
+
+# Editor and IDE cruft
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
