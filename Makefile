@@ -56,7 +56,7 @@ fmt: pre-commit-install ## Run pre-commit hooks against all files
 
 .PHONY: lint-containerfile
 lint-containerfile: hadolint ## Lint Containerfile with hadolint
-	$(HADOLINT) $(CONTAINERFILE) --ignore DL3041 --failure-threshold warning
+	$(HADOLINT) $(CONTAINERFILE) --failure-threshold warning
 
 .PHONY: lint-workflows
 lint-workflows: actionlint ## Lint GitHub Actions workflows
