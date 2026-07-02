@@ -8,6 +8,10 @@ IMAGE_NAME ?= stableos
 IMAGE_TAG ?= latest
 CONTAINERFILE ?= ./Containerfile
 
+# Target architecture for the built image and ISO. The ISO must be amd64 so it
+# boots on standard x86_64 hardware, even when building from an arm64 host.
+TARGET_ARCH ?= amd64
+
 ##@ General
 
 .PHONY: all
@@ -33,16 +37,21 @@ help: ## Display this help
 .PHONY: build
 build: podman ## Build container image with podman
 	$(PODMAN) build \
+		--platform linux/$(TARGET_ARCH) \
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
 output/bootiso/install.iso: build podman ## Build bootable ISO for installation
+	mkdir -p output/bootiso
 	$(PODMAN) run --rm -it --privileged \
+		--platform linux/$(TARGET_ARCH) \
 		--security-opt label=type:unconfined_t \
 		-v ./output:/output \
-		-v /var/lib/containers/storage:/var/lib/containers/storage \
 		quay.io/centos-bootc/bootc-image-builder:latest \
-		--type iso --local $(IMAGE_NAME):$(IMAGE_TAG)
+		--type iso --target-arch $(TARGET_ARCH) --local $(IMAGE_NAME):$(IMAGE_TAG)
+
+.PHONY: iso
+iso: output/bootiso/install.iso ## Build bootable ISO for installation
 
 ##@ Linting and Formatting
 
