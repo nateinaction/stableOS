@@ -11,7 +11,7 @@ CONTAINERFILE ?= ./Containerfile
 ##@ General
 
 .PHONY: all
-all: lint build test ## Run lint, build, and test
+all: fmt build test ## Run lint, build, and test
 
 # The help target prints out all targets with their descriptions organized
 # beneath their categories. The categories are represented by '##@' and the
@@ -45,9 +45,6 @@ pre-commit-install: uv ## Install pre-commit hooks
 .PHONY: fmt
 fmt: pre-commit-install ## Run pre-commit hooks against all files
 	$(UVX) pre-commit run --all-files
-
-.PHONY: lint
-lint: lint-containerfile lint-workflows lint-fish lint-toml ## Run all linting checks
 
 .PHONY: lint-containerfile
 lint-containerfile: hadolint ## Lint Containerfile with hadolint

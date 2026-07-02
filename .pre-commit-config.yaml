@@ -12,3 +12,29 @@ repos:
   rev: v2.4.1
   hooks:
     - id: codespell
+
+- repo: local
+  hooks:
+    - id: lint-containerfile
+      name: Lint Containerfile
+      entry: make lint-containerfile
+      language: system
+      pass_filenames: false
+
+    - id: lint-workflows
+      name: Lint GitHub Actions workflows
+      entry: make lint-workflows
+      language: system
+      pass_filenames: false
+
+    - id: lint-fish
+      name: Check fish config syntax
+      entry: make lint-fish
+      language: system
+      pass_filenames: false
+
+    - id: lint-toml
+      name: Parse config.toml
+      entry: make lint-toml
+      language: system
+      pass_filenames: false
