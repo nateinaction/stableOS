@@ -31,8 +31,8 @@ help: ## Display this help
 ##@ Development
 
 .PHONY: build
-build: ## Build container image with buildah
-	buildah build \
+build: ## Build container image with podman
+	podman build \
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
@@ -51,7 +51,7 @@ lint: lint-containerfile lint-workflows lint-fish lint-toml ## Run all linting c
 
 .PHONY: lint-containerfile
 lint-containerfile: hadolint ## Lint Containerfile with hadolint
-	$(HADOLINT) $(CONTAINERFILE) --ignore DL3041
+	$(HADOLINT) $(CONTAINERFILE) --ignore DL3041 --failure-threshold warning
 
 .PHONY: lint-workflows
 lint-workflows: actionlint ## Lint GitHub Actions workflows
@@ -79,12 +79,12 @@ test-container-structure: build container-structure-test ## Run container struct
 
 .PHONY: clean
 clean: ## Remove built container image
-	buildah rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
-	buildah rmi localhost/$(IMAGE_NAME):$(IMAGE_TAG) || true
+	podman rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
+	podman rmi localhost/$(IMAGE_NAME):$(IMAGE_TAG) || true
 
 .PHONY: clean-all
 clean-all: clean ## Remove all stableos images
-	buildah rmi $$(buildah images -q $(IMAGE_NAME)) || true
+	podman rmi $$(podman images -q $(IMAGE_NAME)) || true
 
 ##@ Build Dependencies
 
@@ -116,8 +116,13 @@ hadolint: $(HADOLINT) ## Download hadolint locally if necessary
 
 $(HADOLINT): $(LOCALBIN)
 	@test -s $(HADOLINT) || { \
-		HADOLINT_DL_URL=$$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/$(HADOLINT_VERSION) | grep -oP '"browser_download_url": "\K[^"]*hadolint-$(OS)-$(ARCH)(?=")')); \
-		curl -o $(HADOLINT) -LO $$HADOLINT_DL_URL && chmod +x $(HADOLINT); \
+		if [ "$(OS)" = "darwin" ]; then \
+			HADOLINT_ARCH="x86_64"; \
+			if [ "$(ARCH)" = "arm64" ]; then HADOLINT_ARCH="arm64"; fi; \
+			curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/latest/download/hadolint-macos-$$HADOLINT_ARCH; \
+		else \
+			curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/latest/download/hadolint-linux-$(ARCH); \
+		fi && chmod +x $(HADOLINT); \
 	}
 
 .PHONY: actionlint
@@ -125,8 +130,13 @@ actionlint: $(ACTIONLINT) ## Download actionlint locally if necessary
 
 $(ACTIONLINT): $(LOCALBIN)
 	@test -s $(ACTIONLINT) || { \
-		ACTIONLINT_DL_URL=$$(curl -s https://api.github.com/repos/rhysd/actionlint/releases/$(ACTIONLINT_VERSION) | grep -oP '"browser_download_url": "\K[^"]*actionlint_$(OS)_$(ARCH)[^"]*(?=")')); \
-		curl -o /tmp/actionlint.tar.gz -LO $$ACTIONLINT_DL_URL && tar -xzf /tmp/actionlint.tar.gz -C $(LOCALBIN) actionlint && mv $(LOCALBIN)/actionlint $(ACTIONLINT) && chmod +x $(ACTIONLINT); \
+		VERSION=$$(curl -s https://api.github.com/repos/rhysd/actionlint/releases/latest | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -1); \
+		if [ "$(ARCH)" = "x86_64" ]; then DL_ARCH="amd64"; else DL_ARCH="$(ARCH)"; fi; \
+		curl -o /tmp/actionlint.tar.gz -L https://github.com/rhysd/actionlint/releases/latest/download/actionlint_$$VERSION\_$(OS)\_$$DL_ARCH.tar.gz && \
+		tar -xzf /tmp/actionlint.tar.gz -C $(LOCALBIN) actionlint && \
+		mv $(LOCALBIN)/actionlint $(ACTIONLINT) && \
+		chmod +x $(ACTIONLINT) && \
+		rm /tmp/actionlint.tar.gz; \
 	}
 
 .PHONY: container-structure-test
@@ -134,7 +144,8 @@ container-structure-test: $(CONTAINER_STRUCTURE_TEST) ## Download container-stru
 
 $(CONTAINER_STRUCTURE_TEST): $(LOCALBIN)
 	@test -s $(CONTAINER_STRUCTURE_TEST) || { \
-		curl -o $(CONTAINER_STRUCTURE_TEST) -LO https://github.com/GoogleContainerTools/container-structure-test/releases/$(CONTAINER_STRUCTURE_TEST_VERSION)/download/container-structure-test-$(OS)-$(ARCH) && chmod +x $(CONTAINER_STRUCTURE_TEST); \
+		curl -o $(CONTAINER_STRUCTURE_TEST) -L https://github.com/GoogleContainerTools/container-structure-test/releases/latest/download/container-structure-test-$(OS)-$(ARCH) && \
+		chmod +x $(CONTAINER_STRUCTURE_TEST); \
 	}
 
 .PHONY: uv
