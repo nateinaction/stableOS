@@ -3,8 +3,8 @@
 # The Anaconda ISO installer is interactive, so this is optional
 
 [[customizations.user]]
-name = "user"
-description = "Default user"
+name = "ngay"
+description = "Primary user"
 groups = ["wheel"]
 # To add an SSH key, specify:
 # key = "ssh-rsa AAAA..."

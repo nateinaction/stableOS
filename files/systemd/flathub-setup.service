@@ -1,0 +1,13 @@
+[Unit]
+Description=Configure Flathub remote on first boot
+ConditionFirstBoot=true
+After=flatpak.service
+Wants=flatpak.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
