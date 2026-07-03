@@ -4,6 +4,17 @@
     "config:recommended"
   ],
   "pinDigests": true,
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": false,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    }
+  ],
   "dockerfile": {
     "managerFilePatterns": [
       "/(^|/)Containerfile$/"
