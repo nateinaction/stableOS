@@ -32,7 +32,7 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
 
 # Install Node.js and the Claude Code CLI (installs system-wide under /usr).
 RUN dnf5 install -y nodejs npm && \
-    npm install -g @anthropic-ai/claude-code@2.1.200 && \
+    npm install -g --prefix /usr @anthropic-ai/claude-code@2.1.200 && \
     npm cache clean --force && \
     dnf5 clean all
 
