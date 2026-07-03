@@ -79,10 +79,6 @@ lint-fish: ## Check fish config syntax
 	@# which is suppoesed to be soon according to the fish-shell release page: https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
 	fish --no-execute files/skel/.config/fish/config.fish
 
-.PHONY: lint-toml
-lint-toml: uv ## Parse config.toml
-	$(UVX) tombi format
-
 ##@ Testing
 
 .PHONY: test

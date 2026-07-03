@@ -6,6 +6,7 @@ repos:
     - id: end-of-file-fixer
     - id: check-yaml
     - id: check-json
+    - id: check-toml
     - id: check-added-large-files
 
 - repo: https://github.com/codespell-project/codespell
@@ -30,11 +31,5 @@ repos:
     - id: lint-fish
       name: Check fish config syntax
       entry: make lint-fish
-      language: system
-      pass_filenames: false
-
-    - id: lint-toml
-      name: Parse config.toml
-      entry: make lint-toml
       language: system
       pass_filenames: false
