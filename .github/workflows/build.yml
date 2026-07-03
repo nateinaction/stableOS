@@ -77,39 +77,31 @@ jobs:
           tags: latest ${{ github.sha }}
           registry: ghcr.io/nateinaction
 
+      # bootc-image-builder-action wipes /var/lib/containers/storage and pulls
+      # the image fresh as root, so it can't see our rootless-built image and a
+      # bare name would resolve to docker.io. Pull the copy we just pushed to
+      # GHCR by its fully-qualified name. This runs rootful (sudo podman), so
+      # the rootless podman-login above doesn't apply -- log root in separately
+      # so it can pull the (private) package. Gated to main because that's the
+      # only time the image is pushed.
+      - name: Log in to GHCR for rootful ISO build
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       - name: Build ISO
         id: build-iso
+        if: github.ref == 'refs/heads/main'
         uses: osbuild/bootc-image-builder-action@v0.0.2
         with:
-          config-file: ./iso-config.toml
-          image: stableos:${{ github.sha }}
+          config-file: ./config.toml
+          image: ghcr.io/nateinaction/stableos:${{ github.sha }}
           types: |
             iso
 
       - name: Upload Artifact
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: iso
           path: ${{ steps.build-iso.outputs.output-directory }}
           if-no-files-found: error
-
-  # iso:
-  #   runs-on: ubuntu-latest
-  #   needs: test-container-structure
-  #   if: github.ref == 'refs/heads/main'
-
-  #   steps:
-  #     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-
-  #     - name: Build installer ISO
-  #       run: make output/bootiso/stableos.iso
-
-  #     - name: Upload installer ISO
-  #       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-  #       with:
-  #         name: stableos-install-iso
-  #         path: output/bootiso/stableos.iso
-  #         if-no-files-found: error
-  #         retention-days: 14
-
-    # Note: Image signing (cosign/sigstore) can be added in a future iteration.
