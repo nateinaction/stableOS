@@ -16,6 +16,9 @@ RUN dnf5 install -y vim && dnf5 clean all
 # Install z (directory jumper) and fzf (fuzzy finder).
 RUN dnf5 install -y z fzf && dnf5 clean all
 
+# Install Alacritty terminal.
+RUN dnf5 install -y alacritty && dnf5 clean all
+
 # Install Fish shell and set it as the default shell for new users.
 RUN dnf5 install -y fish && \
     echo "/usr/bin/fish" >> /etc/shells && \
@@ -38,6 +41,16 @@ RUN dnf5 -y config-manager addrepo \
         --set=gpgcheck=1 \
         --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
     dnf5 install -y claude-code && \
+    dnf5 clean all
+
+# Add Warp terminal repo and install warp-terminal.
+RUN dnf5 -y config-manager addrepo \
+        --id=warpdotdev \
+        --set=name=warpdotdev \
+        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
+    dnf5 install -y warp-terminal && \
     dnf5 clean all
 
 # Install the Broadcom wl WiFi driver for MacBook hardware.

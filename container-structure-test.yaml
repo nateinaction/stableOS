@@ -54,6 +54,14 @@ commandTests:
   - name: 'claude is installed'
     command: 'command'
     args: ['-v', 'claude']
+  - name: 'alacritty is installed'
+    command: 'command'
+    args: ['-v', 'alacritty']
+    exitCode: 0
+  - name: 'warp-terminal is installed'
+    command: 'command'
+    args: ['-v', 'warp-terminal']
+    exitCode: 0
   - name: 'broadcom wl kernel module is built'
     command: 'sh'
     args: ['-c', 'find /usr/lib/modules -name "wl.ko*" | grep -q .']
