@@ -32,7 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: make build
+      - name: Build image with buildah
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: |
+            ./Containerfile
+          image: stableos
+          tags: ${{ github.ref == 'refs/heads/main' && 'latest' || '' }} ${{ github.sha }}
 
   test-container-structure:
     runs-on: ubuntu-latest
