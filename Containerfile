@@ -26,11 +26,7 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
     dnf5 install -y gh && \
     dnf5 clean all
 
-# Add Anthropic's signed RPM repo and install the Claude Code CLI. The native
-# binary package needs no Node.js and installs into /usr, so it plays nicely
-# with the immutable ostree layout. We track the "stable" channel; the image is
-# the update mechanism, so Claude Code's own auto-updater has nothing to write
-# to a read-only /usr anyway.
+# Add Claude Code repo and install claude-code.
 RUN dnf5 -y config-manager addrepo \
         --id=claude-code \
         --set=name="Claude Code" \
@@ -38,6 +34,28 @@ RUN dnf5 -y config-manager addrepo \
         --set=gpgcheck=1 \
         --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
     dnf5 install -y claude-code && \
+    dnf5 clean all
+
+# Install the Broadcom wl WiFi driver for MacBook hardware.
+#
+# broadcom-wl ships as an akmod (source module) that must be compiled against the
+# kernel baked into this image. Two things make this tricky in a container build:
+#
+#  1. Kernel version: we build for the image's kernel-core, NOT `uname -r` (which
+#     is the build host's kernel). The matching kernel-devel must exist in the
+#     repos, which requires a stable Fedora base.
+#  2. Root: akmodsbuild refuses to run as root (it treats a writable /var as
+#     "root"). The akmod-wl %post scriptlet builds directly as root and fails, so
+#     we install it with scriptlets disabled and instead invoke the `akmods`
+#     wrapper, which drops to the unprivileged `akmods` user to compile wl.ko.
+RUN dnf5 install -y \
+        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" && \
+    KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    dnf5 install -y akmods "kernel-devel-${KERNEL_VERSION}" && \
+    dnf5 install -y --setopt=tsflags=noscripts broadcom-wl && \
+    akmods --force --kernels "${KERNEL_VERSION}" && \
+    modinfo -k "${KERNEL_VERSION}" wl && \
     dnf5 clean all
 
 # Enable automatic image updates via bootc.
