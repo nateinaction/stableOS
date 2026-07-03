@@ -17,10 +17,10 @@ make
 To create a bootable ISO for installing stableOS on a new machine:
 
 ```bash
-make output/bootiso/install.iso
+make output/bootiso/stableos.iso
 ```
 
-The ISO will be written to `output/bootiso/install.iso`.
+The ISO will be written to `output/bootiso/stableos.iso`.
 
 ## Installed Packages
 
@@ -74,7 +74,7 @@ systemctl disable bootc-fetch-apply-updates.timer
 
 1. Flash the ISO to a USB drive:
    ```bash
-   dd if=output/bootiso/install.iso of=/dev/sdX bs=4M status=progress
+   dd if=output/bootiso/stableos.iso of=/dev/sdX bs=4M status=progress
    ```
    (Replace `/dev/sdX` with your USB device.)
 

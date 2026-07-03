@@ -34,6 +34,8 @@ help: ## Display this help
 
 ##@ Development
 
+PODMAN_RUNNER ?= go run github.com/containers/podman/v6/cmd/podman@$(PODMAN_VERSION)
+
 .PHONY: build
 build: podman ## Build container image with podman
 	$(PODMAN) build \
@@ -41,9 +43,9 @@ build: podman ## Build container image with podman
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
-output/bootiso/install.iso: build podman ## Build bootable ISO for installation
+output/bootiso/stableos.iso: build podman ## Build bootable ISO for installation
 	mkdir -p output/bootiso
-	$(PODMAN) run --rm -it --privileged \
+	$(PODMAN) run --rm --privileged \
 		--platform linux/$(TARGET_ARCH) \
 		--security-opt label=type:unconfined_t \
 		-v ./output:/output \
@@ -51,7 +53,7 @@ output/bootiso/install.iso: build podman ## Build bootable ISO for installation
 		--type iso --target-arch $(TARGET_ARCH) --local $(IMAGE_NAME):$(IMAGE_TAG)
 
 .PHONY: iso
-iso: output/bootiso/install.iso ## Build bootable ISO for installation
+iso: output/bootiso/stableos.iso ## Build bootable ISO for installation
 
 ##@ Linting and Formatting
 
@@ -116,76 +118,56 @@ OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 HADOLINT ?= $(LOCALBIN)/hadolint-$(HADOLINT_VERSION)
 ACTIONLINT ?= $(LOCALBIN)/actionlint-$(ACTIONLINT_VERSION)
 CONTAINER_STRUCTURE_TEST ?= $(LOCALBIN)/container-structure-test-$(CONTAINER_STRUCTURE_TEST_VERSION)
-PODMAN ?= $(LOCALBIN)/podman-$(PODMAN_VERSION)/podman
+PODMAN ?= $(LOCALBIN)/podman-$(PODMAN_VERSION)
 UV_DIR ?= $(LOCALBIN)/uv-$(UV_VERSION)
 UV ?= $(UV_DIR)/uv
 UVX ?= $(UV_DIR)/uvx
 
 ## Tool Versions
-HADOLINT_VERSION ?= latest
-ACTIONLINT_VERSION ?= latest
-CONTAINER_STRUCTURE_TEST_VERSION ?= latest
-PODMAN_VERSION ?= latest
+ACTIONLINT_VERSION ?= v1.7.12
+CONTAINER_STRUCTURE_TEST_VERSION ?= v1.22.1
+HADOLINT_VERSION ?= v2.14.0
+PODMAN_VERSION ?= v6.0.0
 UV_VERSION ?= 0.11.26
 
 .PHONY: hadolint
 hadolint: $(HADOLINT) ## Download hadolint locally if necessary
 
 $(HADOLINT): $(LOCALBIN)
-	@test -s $(HADOLINT) || { \
-		if [ "$(OS)" = "darwin" ]; then \
-			HADOLINT_ARCH="x86_64"; \
-			if [ "$(ARCH)" = "arm64" ]; then HADOLINT_ARCH="arm64"; fi; \
-			curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/latest/download/hadolint-macos-$$HADOLINT_ARCH; \
-		else \
-			curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/latest/download/hadolint-linux-$(ARCH); \
-		fi && chmod +x $(HADOLINT); \
-	}
+	HADOLINT_OS=`[ "$(OS)" = "darwin" ] && echo macos || echo linux`; \
+	curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$(ARCH); \
+	chmod +x $(HADOLINT)
 
 .PHONY: actionlint
 actionlint: $(ACTIONLINT) ## Download actionlint locally if necessary
 
 $(ACTIONLINT): $(LOCALBIN)
-	@test -s $(ACTIONLINT) || { \
-		VERSION=$$(curl -s https://api.github.com/repos/rhysd/actionlint/releases/latest | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -1); \
-		if [ "$(ARCH)" = "x86_64" ]; then DL_ARCH="amd64"; else DL_ARCH="$(ARCH)"; fi; \
-		curl -o /tmp/actionlint.tar.gz -L https://github.com/rhysd/actionlint/releases/latest/download/actionlint_$$VERSION\_$(OS)\_$$DL_ARCH.tar.gz && \
+	curl -o /tmp/actionlint.tar.gz -sL https://github.com/rhysd/actionlint/releases/download/$(ACTIONLINT_VERSION)/actionlint_$(ACTIONLINT_VERSION:v%=%)_$(OS)_$(ARCH).tar.gz && \
 		tar -xzf /tmp/actionlint.tar.gz -C $(LOCALBIN) actionlint && \
 		mv $(LOCALBIN)/actionlint $(ACTIONLINT) && \
 		chmod +x $(ACTIONLINT) && \
-		rm /tmp/actionlint.tar.gz; \
-	}
+		touch $(ACTIONLINT) && \
+		rm /tmp/actionlint.tar.gz
 
 .PHONY: container-structure-test
 container-structure-test: $(CONTAINER_STRUCTURE_TEST) ## Download container-structure-test locally if necessary
 
 $(CONTAINER_STRUCTURE_TEST): $(LOCALBIN)
-	@test -s $(CONTAINER_STRUCTURE_TEST) || { \
-		curl -o $(CONTAINER_STRUCTURE_TEST) -L https://github.com/GoogleContainerTools/container-structure-test/releases/latest/download/container-structure-test-$(OS)-$(ARCH) && \
-		chmod +x $(CONTAINER_STRUCTURE_TEST); \
-	}
+	curl -o $(CONTAINER_STRUCTURE_TEST) -sL https://github.com/GoogleContainerTools/container-structure-test/releases/download/$(CONTAINER_STRUCTURE_TEST_VERSION)/container-structure-test-$(OS)-$(ARCH) && \
+		chmod +x $(CONTAINER_STRUCTURE_TEST) && \
+		touch $(CONTAINER_STRUCTURE_TEST)
 
 .PHONY: podman
 podman: $(PODMAN) ## Download podman locally if necessary
 
 $(PODMAN): $(LOCALBIN)
-	@test -s $(PODMAN) || { \
-		mkdir -p "$$(dirname $(PODMAN))"; \
-		if [ "$(OS)" = "darwin" ]; then \
-			PODMAN_ARCH=$$([ "$(ARCH)" = "arm64" ] && echo "arm64" || echo "amd64"); \
-			RELEASE_URL=$$(curl -sL https://api.github.com/repos/podman-container-tools/podman/releases/latest | grep -o "https[^\"]*podman-remote-release-darwin_$$PODMAN_ARCH.zip" | head -1); \
-			if [ -z "$$RELEASE_URL" ]; then \
-				echo "Failed to find podman release for macOS"; exit 1; \
-			fi; \
-			curl -o /tmp/podman.zip -L "$$RELEASE_URL" && \
-			unzip -q /tmp/podman.zip -d "$$(dirname $(PODMAN))" && \
-			find "$$(dirname $(PODMAN))" -name podman -type f -exec mv {} $(PODMAN) \; && \
-			chmod +x $(PODMAN) && \
-			rm /tmp/podman.zip; \
-		else \
-			echo "podman download for linux not yet supported"; exit 1; \
-		fi; \
-	}
+	curl -o /tmp/podman.zip -sL https://github.com/podman-container-tools/podman/releases/download/$(PODMAN_VERSION)/podman-remote-release-$(OS)_$(ARCH).zip && \
+		unzip -oq /tmp/podman.zip -d "$$(dirname $(PODMAN))" && \
+		find "$$(dirname $(PODMAN))" -name podman -type f -exec mv {} $(PODMAN) \; && \
+		find "$$(dirname $(PODMAN))" -maxdepth 1 -type d -name 'podman-*' -exec rm -rf {} + && \
+		chmod +x $(PODMAN) && \
+		touch $(PODMAN) && \
+		rm /tmp/podman.zip
 
 .PHONY: uv
 uv: $(UV) ## Download uv locally if necessary
