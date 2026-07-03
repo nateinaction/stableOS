@@ -13,9 +13,13 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
 # Install vim.
 RUN dnf5 install -y vim && dnf5 clean all
 
-# Install Fish shell and set it as the default shell.
+# Install z (directory jumper) and fzf (fuzzy finder).
+RUN dnf5 install -y z fzf && dnf5 clean all
+
+# Install Fish shell and set it as the default shell for new users.
 RUN dnf5 install -y fish && \
     echo "/usr/bin/fish" >> /etc/shells && \
+    useradd -D --shell /usr/bin/fish && \
     dnf5 clean all
 
 # Install chezmoi for dotfile management.
@@ -57,6 +61,9 @@ RUN dnf5 install -y \
     akmods --force --kernels "${KERNEL_VERSION}" && \
     modinfo -k "${KERNEL_VERSION}" wl && \
     dnf5 clean all
+
+# Force-load applesmc so the MacBook keyboard backlight LED is available.
+COPY files/modules-load.d/applesmc.conf /usr/lib/modules-load.d/
 
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer

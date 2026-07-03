@@ -17,6 +17,9 @@ fileExistenceTests:
   - name: 'Flathub setup service exists'
     path: '/usr/lib/systemd/system/flathub-setup.service'
     shouldExist: true
+  - name: 'applesmc module-load config exists'
+    path: '/usr/lib/modules-load.d/applesmc.conf'
+    shouldExist: true
 
 commandTests:
   - name: 'tailscale is installed'
@@ -39,6 +42,15 @@ commandTests:
     command: 'command'
     args: ['-v', 'gh']
     exitCode: 0
+  - name: 'fzf is installed'
+    command: 'command'
+    args: ['-v', 'fzf']
+    exitCode: 0
+  # z is a sourced shell function, not a PATH binary, so verify the package instead.
+  - name: 'z is installed'
+    command: 'rpm'
+    args: ['-q', 'z']
+    exitCode: 0
   - name: 'claude is installed'
     command: 'command'
     args: ['-v', 'claude']
@@ -49,6 +61,10 @@ commandTests:
   - name: 'fish is registered in /etc/shells'
     command: 'grep'
     args: ['-qx', '/usr/bin/fish', '/etc/shells']
+    exitCode: 0
+  - name: 'fish is the default shell for new users'
+    command: 'grep'
+    args: ['-qx', 'SHELL=/usr/bin/fish', '/etc/default/useradd']
     exitCode: 0
   - name: 'tailscaled.service is enabled'
     command: 'systemctl'
