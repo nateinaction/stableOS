@@ -5,8 +5,8 @@
   ],
   "pinDigests": true,
   "dockerfile": {
-    "fileMatch": [
-      "(^|/)Containerfile$"
+    "managerFilePatterns": [
+      "/(^|/)Containerfile$/"
     ]
   }
 }
