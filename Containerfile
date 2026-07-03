@@ -26,6 +26,16 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
     dnf5 install -y gh && \
     dnf5 clean all
 
+# Add Claude Code repo and install claude-code.
+RUN dnf5 -y config-manager addrepo \
+        --id=claude-code \
+        --set=name="Claude Code" \
+        --set=baseurl=https://downloads.claude.ai/claude-code/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
+    dnf5 install -y claude-code && \
+    dnf5 clean all
+
 # Install the Broadcom wl WiFi driver for MacBook hardware.
 #
 # broadcom-wl ships as an akmod (source module) that must be compiled against the

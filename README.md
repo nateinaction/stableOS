@@ -28,6 +28,7 @@ stableOS includes a curated set of applications and tools baked into the image:
 
 - **Tailscale** — Secure networking daemon (run `sudo tailscale up` after first boot to configure).
 - **chezmoi** — Dotfile manager for reproducible, versioned user configuration.
+- **Claude Code** — Anthropic's agentic coding CLI (run `claude` to start; requires a Claude account).
 - **Flathub** — Preconfigured on first boot for easy Flatpak app installation via COSMIC Store.
 
 ### Recommended Post-Install Apps
