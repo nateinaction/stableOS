@@ -26,6 +26,20 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
     dnf5 install -y gh && \
     dnf5 clean all
 
+# Add Anthropic's signed RPM repo and install the Claude Code CLI. The native
+# binary package needs no Node.js and installs into /usr, so it plays nicely
+# with the immutable ostree layout. We track the "stable" channel; the image is
+# the update mechanism, so Claude Code's own auto-updater has nothing to write
+# to a read-only /usr anyway.
+RUN dnf5 -y config-manager addrepo \
+        --id=claude-code \
+        --set=name="Claude Code" \
+        --set=baseurl=https://downloads.claude.ai/claude-code/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
+    dnf5 install -y claude-code && \
+    dnf5 clean all
+
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
 

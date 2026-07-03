@@ -39,6 +39,10 @@ commandTests:
     command: 'command'
     args: ['-v', 'gh']
     exitCode: 0
+  - name: 'claude is installed'
+    command: 'command'
+    args: ['-v', 'claude']
+    exitCode: 0
   - name: 'fish is registered in /etc/shells'
     command: 'grep'
     args: ['-qx', '/usr/bin/fish', '/etc/shells']
