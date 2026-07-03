@@ -14,6 +14,9 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
     systemctl enable tailscaled.service && \
     dnf5 clean all
 
+# Install vim.
+RUN dnf5 install -y vim && dnf5 clean all
+
 # Install Fish shell and set it as the default shell.
 RUN dnf5 install -y fish && \
     echo "/usr/bin/fish" >> /etc/shells && \
@@ -21,6 +24,31 @@ RUN dnf5 install -y fish && \
 
 # Install chezmoi for dotfile management.
 RUN dnf5 install -y chezmoi && dnf5 clean all
+
+# Add GitHub CLI repo and install gh.
+RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
+    dnf5 install -y gh && \
+    dnf5 clean all
+
+# Install Node.js and the Claude Code CLI (installs system-wide under /usr).
+RUN dnf5 install -y nodejs npm && \
+    npm install -g @anthropic-ai/claude-code@2.1.200 && \
+    npm cache clean --force && \
+    dnf5 clean all
+
+# Install Broadcom wl WiFi driver for MacBook hardware.
+# broadcom-wl is an akmod (source kernel module), so it must be compiled against
+# the kernel baked into this image. We detect that kernel version from the
+# installed kernel-core package (NOT `uname -r`, which is the build host's kernel)
+# and force akmods to build for it. The resulting wl.ko lands in /usr/lib/modules.
+RUN dnf5 install -y \
+        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" && \
+    KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    dnf5 install -y akmods "kernel-devel-${KERNEL_VERSION}" broadcom-wl && \
+    akmods --force --kernels "${KERNEL_VERSION}" && \
+    modinfo -k "${KERNEL_VERSION}" wl && \
+    dnf5 clean all
 
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
