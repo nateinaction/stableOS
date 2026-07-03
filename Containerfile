@@ -31,9 +31,11 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
     dnf5 clean all
 
 # Install Node.js and the Claude Code CLI (installs system-wide under /usr).
+# On ostree, both /usr/local and /root are symlinks into /var (not real dirs at
+# build time), so we install to --prefix /usr and force npm's HOME/cache to /tmp.
 RUN dnf5 install -y nodejs npm && \
-    npm install -g --prefix /usr @anthropic-ai/claude-code@2.1.200 && \
-    npm cache clean --force && \
+    HOME=/tmp npm install -g --prefix /usr @anthropic-ai/claude-code@2.1.200 && \
+    rm -rf /tmp/.npm && \
     dnf5 clean all
 
 # Install Broadcom wl WiFi driver for MacBook hardware.
