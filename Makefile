@@ -7,10 +7,7 @@ SHELL = /usr/bin/env bash -o pipefail
 IMAGE_NAME ?= stableos
 IMAGE_TAG ?= latest
 CONTAINERFILE ?= ./Containerfile
-
-# Target architecture for the built image and ISO. The ISO must be amd64 so it
-# boots on standard x86_64 hardware, even when building from an arm64 host.
-TARGET_ARCH ?= amd64
+PLATFORM ?= linux/amd64
 
 ##@ General
 
@@ -39,18 +36,20 @@ PODMAN_RUNNER ?= go run github.com/containers/podman/v6/cmd/podman@$(PODMAN_VERS
 .PHONY: build
 build: podman ## Build container image with podman
 	$(PODMAN) build \
-		--platform linux/$(TARGET_ARCH) \
+		--platform $(PLATFORM) \
 		-f $(CONTAINERFILE) \
 		-t $(IMAGE_NAME):$(IMAGE_TAG)
 
 output/bootiso/stableos.iso: build podman ## Build bootable ISO for installation
 	mkdir -p output/bootiso
 	$(PODMAN) run --rm --privileged \
-		--platform linux/$(TARGET_ARCH) \
+		--platform $(PLATFORM) \
 		--security-opt label=type:unconfined_t \
 		-v ./output:/output \
 		quay.io/centos-bootc/bootc-image-builder:latest \
-		--type iso --target-arch $(TARGET_ARCH) --local $(IMAGE_NAME):$(IMAGE_TAG)
+		--target-arch $(subst linux/,,$(PLATFORM)) \
+		--local $(IMAGE_NAME):$(IMAGE_TAG) \
+		--type iso
 
 .PHONY: iso
 iso: output/bootiso/stableos.iso ## Build bootable ISO for installation
@@ -114,15 +113,15 @@ UV_VERSION ?= 0.11.26
 hadolint: $(HADOLINT) ## Download hadolint locally if necessary
 
 $(HADOLINT): $(LOCALBIN)
-	HADOLINT_OS=`[ "$(OS)" = "darwin" ] && echo macos || echo linux`; \
-	curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$(ARCH); \
-	chmod +x $(HADOLINT)
+	@HADOLINT_OS=`[ "$(OS)" = "darwin" ] && echo macos || echo linux`; \
+		curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$(ARCH); \
+		chmod +x $(HADOLINT)
 
 .PHONY: container-structure-test
 container-structure-test: $(CONTAINER_STRUCTURE_TEST) ## Download container-structure-test locally if necessary
 
 $(CONTAINER_STRUCTURE_TEST): $(LOCALBIN)
-	curl -o $(CONTAINER_STRUCTURE_TEST) -sL https://github.com/GoogleContainerTools/container-structure-test/releases/download/$(CONTAINER_STRUCTURE_TEST_VERSION)/container-structure-test-$(OS)-$(ARCH) && \
+	@curl -o $(CONTAINER_STRUCTURE_TEST) -sL https://github.com/GoogleContainerTools/container-structure-test/releases/download/$(CONTAINER_STRUCTURE_TEST_VERSION)/container-structure-test-$(OS)-$(ARCH) && \
 		chmod +x $(CONTAINER_STRUCTURE_TEST) && \
 		touch $(CONTAINER_STRUCTURE_TEST)
 
@@ -130,7 +129,7 @@ $(CONTAINER_STRUCTURE_TEST): $(LOCALBIN)
 podman: $(PODMAN) ## Download podman locally if necessary
 
 $(PODMAN): $(LOCALBIN)
-	curl -o /tmp/podman.zip -sL https://github.com/podman-container-tools/podman/releases/download/$(PODMAN_VERSION)/podman-remote-release-$(OS)_$(ARCH).zip && \
+	@curl -o /tmp/podman.zip -sL https://github.com/podman-container-tools/podman/releases/download/$(PODMAN_VERSION)/podman-remote-release-$(OS)_$(ARCH).zip && \
 		unzip -oq /tmp/podman.zip -d "$$(dirname $(PODMAN))" && \
 		find "$$(dirname $(PODMAN))" -name podman -type f -exec mv {} $(PODMAN) \; && \
 		find "$$(dirname $(PODMAN))" -maxdepth 1 -type d -name 'podman-*' -exec rm -rf {} + && \
@@ -142,4 +141,6 @@ $(PODMAN): $(LOCALBIN)
 uv: $(UV) ## Download uv locally if necessary
 
 $(UV): $(LOCALBIN)
-	@test -s $(UV) || { mkdir -p $(UV_DIR); curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | UV_UNMANAGED_INSTALL=$(UV_DIR) sh > /dev/null; }
+	@mkdir -p $(UV_DIR) && \
+		curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | UV_UNMANAGED_INSTALL=$(UV_DIR) sh > /dev/null && \
+		touch $(UV)
