@@ -4,6 +4,19 @@ LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
 
+# Make /opt usable for RPMs that install there (1Password, Warp, etc.).
+#
+# The base image ships /opt as a symlink to /var/opt (the writable, persistent
+# model). /var/opt does not exist at build time, so RPM's cpio unpack fails with
+# "mkdir failed - No such file or directory" when creating /opt/<app>. Replacing
+# the symlink with a real directory makes /opt part of the immutable image, which
+# is the intended model for software baked in at build time. Trade-off: /opt is
+# read-only at runtime.
+#
+# https://bootc.dev/bootc/building/guidance.html
+# https://github.com/bootc-dev/bootc/discussions/1038
+RUN rm -f /opt && mkdir -p /opt
+
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
     dnf5 install -y tailscale && \
@@ -38,6 +51,19 @@ RUN dnf5 -y config-manager addrepo \
         --set=gpgcheck=1 \
         --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
     dnf5 install -y claude-code && \
+    dnf5 clean all
+
+# Add 1Password repo and install the 1Password desktop app.
+RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 -y config-manager addrepo \
+        --id=1password \
+        --set=name="1Password Stable Channel" \
+        --set=baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch \
+        --set=enabled=1 \
+        --set=gpgcheck=1 \
+        --set=repo_gpgcheck=1 \
+        --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 install -y 1password && \
     dnf5 clean all
 
 # Install the Broadcom wl WiFi driver for MacBook hardware.
