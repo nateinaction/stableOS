@@ -19,10 +19,6 @@ fileExistenceTests:
     shouldExist: true
 
 commandTests:
-  - name: '/opt is a symlink to /usr/lib/opt'
-    command: 'test'
-    args: ['-L', '/opt']
-    exitCode: 0
   - name: 'tailscale is installed'
     command: 'command'
     args: ['-v', 'tailscale']
@@ -31,9 +27,17 @@ commandTests:
     command: 'command'
     args: ['-v', 'fish']
     exitCode: 0
+  - name: 'vim is installed'
+    command: 'command'
+    args: ['-v', 'vim']
+    exitCode: 0
   - name: 'chezmoi is installed'
     command: 'command'
     args: ['-v', 'chezmoi']
+    exitCode: 0
+  - name: 'gh is installed'
+    command: 'command'
+    args: ['-v', 'gh']
     exitCode: 0
   - name: 'fish is registered in /etc/shells'
     command: 'grep'

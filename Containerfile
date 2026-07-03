@@ -1,18 +1,17 @@
-FROM quay.io/fedora-ostree-desktops/cosmic-atomic:45@sha256:2c42315f5fab9e04fcda5db19ef0451a6970e3b3e91fb418c49322419261589f
+FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:0dd577894925b5b9af2d5944acb878d3db4e61a2fa15944eceeb224cbf96da8b
 
 LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
-
-# Fix /opt so 1Password persists across boots.
-# On bootc, /opt is a symlink to /var/opt (non-persistent), so we redirect it to /usr/lib/opt (in the image).
-RUN rm -rf /opt && mkdir -p /usr/lib/opt && ln -s /usr/lib/opt /opt
 
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
     dnf5 install -y tailscale && \
     systemctl enable tailscaled.service && \
     dnf5 clean all
+
+# Install vim.
+RUN dnf5 install -y vim && dnf5 clean all
 
 # Install Fish shell and set it as the default shell.
 RUN dnf5 install -y fish && \
@@ -21,6 +20,11 @@ RUN dnf5 install -y fish && \
 
 # Install chezmoi for dotfile management.
 RUN dnf5 install -y chezmoi && dnf5 clean all
+
+# Add GitHub CLI repo and install gh.
+RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
+    dnf5 install -y gh && \
+    dnf5 clean all
 
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
