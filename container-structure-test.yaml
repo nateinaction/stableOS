@@ -62,6 +62,10 @@ commandTests:
     command: 'command'
     args: ['-v', 'warp-terminal']
     exitCode: 0
+  - name: '1password is installed'
+    command: 'command'
+    args: ['-v', '1password']
+    exitCode: 0
   - name: 'broadcom wl kernel module is built'
     command: 'sh'
     args: ['-c', 'find /usr/lib/modules -name "wl.ko*" | grep -q .']
