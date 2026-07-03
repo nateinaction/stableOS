@@ -54,6 +54,14 @@ commandTests:
   - name: 'claude is installed'
     command: 'command'
     args: ['-v', 'claude']
+  - name: 'alacritty is installed'
+    command: 'command'
+    args: ['-v', 'alacritty']
+    exitCode: 0
+  - name: 'warp-terminal is installed'
+    command: 'command'
+    args: ['-v', 'warp-terminal']
+    exitCode: 0
   - name: '1password is installed'
     command: 'command'
     args: ['-v', '1password']
