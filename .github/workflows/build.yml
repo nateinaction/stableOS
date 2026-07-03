@@ -41,6 +41,14 @@ jobs:
           image: stableos
           tags: ${{ github.ref == 'refs/heads/main' && 'latest' || '' }} ${{ github.sha }}
 
+      # buildah stores the image in podman's containers-storage, but
+      # container-structure-test only supports the docker/tar drivers and our
+      # suite needs command tests (docker driver). Copy the image into the
+      # runner's Docker daemon so the test can find stableos:latest. The SHA
+      # tag is always present; the latest tag is only applied on main.
+      - name: Load image into Docker for structure tests
+        run: podman push stableos:${{ github.sha }} docker-daemon:stableos:latest
+
       - name: Run container structure tests
         run: make test-container-structure
 
