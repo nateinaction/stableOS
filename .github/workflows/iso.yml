@@ -1,0 +1,66 @@
+name: Build installer ISO
+
+# The ISO build is slow and only needed occasionally, so it runs on demand
+# instead of on every push. It builds from an image already published to GHCR
+# by the "Build and publish stableOS" workflow -- pick the tag to build from
+# (defaults to :latest).
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "GHCR image tag to build the ISO from"
+        required: true
+        default: latest
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      # We need lots of disk space for the ISO, so clear the GitHub Actions
+      # runner cache to free up space.
+      # Based on https://github.com/orgs/community/discussions/25678
+      - name: Clear GitHub Actions runner cache
+        run: rm -rf /opt/hostedtoolcache
+
+      # Build the installer ISO by running bootc-image-builder directly instead
+      # of osbuild/bootc-image-builder-action -- the action's latest release
+      # (v0.0.2) is pinned to the deprecated Node 20, and this mirrors the
+      # Makefile's `make iso` so local and CI stay in sync. bib runs rootful and
+      # reads the image from /var/lib/containers/storage, so log root in and pull
+      # the published copy first. --rootfs is required because the COSMIC base
+      # declares no default root filesystem.
+      - name: Build ISO
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+          ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IMAGE="ghcr.io/nateinaction/stableos:${TAG}"
+          echo "$GITHUB_TOKEN" | sudo podman login ghcr.io -u "$ACTOR" --password-stdin
+          sudo podman pull "$IMAGE"
+          mkdir -p output
+          sudo podman run --rm --privileged \
+            --security-opt label=type:unconfined_t \
+            --volume /var/lib/containers/storage:/var/lib/containers/storage \
+            --volume ./output:/output \
+            --volume ./config.toml:/config.toml:ro \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            build \
+            --type iso \
+            --rootfs btrfs \
+            --local "$IMAGE"
+          sudo chown -R "$USER" output
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: iso
+          path: output
+          if-no-files-found: error
