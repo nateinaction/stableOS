@@ -114,7 +114,8 @@ hadolint: $(HADOLINT) ## Download hadolint locally if necessary
 
 $(HADOLINT): $(LOCALBIN)
 	@HADOLINT_OS=`[ "$(OS)" = "darwin" ] && echo macos || echo linux`; \
-		curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$(ARCH); \
+		HADOLINT_ARCH=`[ "$(ARCH)" = "amd64" ] && echo x86_64 || echo $(ARCH)`; \
+		curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$$HADOLINT_ARCH; \
 		chmod +x $(HADOLINT)
 
 .PHONY: container-structure-test
