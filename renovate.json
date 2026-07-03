@@ -13,6 +13,13 @@
         "major"
       ],
       "automerge": false
+    },
+    {
+      "description": "Only track Fedora releases that have reached GA; bump this cap when the next Fedora version is released (GAs ~April/Oct).",
+      "matchPackageNames": [
+        "quay.io/fedora-ostree-desktops/cosmic-atomic"
+      ],
+      "allowedVersions": "<=44"
     }
   ],
   "dockerfile": {

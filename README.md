@@ -101,10 +101,28 @@ bootc switch ghcr.io/nateinaction/stableos:latest
 After installation, fetch the latest image from GHCR:
 
 ```bash
-bootc upgrade
+sudo bootc upgrade
 ```
 
 This pulls new images published to the registry and stages them for the next reboot.
+
+To reboot into the update automatically once it's staged:
+
+```bash
+sudo bootc upgrade --apply
+```
+
+To check whether an update is available without staging it:
+
+```bash
+sudo bootc upgrade --check
+```
+
+If an update misbehaves, roll back to the previous deployment:
+
+```bash
+sudo bootc rollback
+```
 
 ## Repository Structure
 

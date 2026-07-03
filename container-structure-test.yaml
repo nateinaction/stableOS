@@ -39,6 +39,10 @@ commandTests:
     command: 'command'
     args: ['-v', 'gh']
     exitCode: 0
+  - name: 'broadcom wl kernel module is built'
+    command: 'sh'
+    args: ['-c', 'find /usr/lib/modules -name "wl.ko*" | grep -q .']
+    exitCode: 0
   - name: 'fish is registered in /etc/shells'
     command: 'grep'
     args: ['-qx', '/usr/bin/fish', '/etc/shells']
