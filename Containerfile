@@ -1,12 +1,8 @@
-FROM quay.io/fedora-ostree-desktops/cosmic-atomic:45@sha256:2c42315f5fab9e04fcda5db19ef0451a6970e3b3e91fb418c49322419261589f
+FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:0dd577894925b5b9af2d5944acb878d3db4e61a2fa15944eceeb224cbf96da8b
 
 LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
-
-# Fix /opt so 1Password persists across boots.
-# On bootc, /opt is a symlink to /var/opt (non-persistent), so we redirect it to /usr/lib/opt (in the image).
-RUN rm -rf /opt && mkdir -p /usr/lib/opt && ln -s /usr/lib/opt /opt
 
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
@@ -28,20 +24,6 @@ RUN dnf5 install -y chezmoi && dnf5 clean all
 # Add GitHub CLI repo and install gh.
 RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
     dnf5 install -y gh && \
-    dnf5 clean all
-
-# Install Broadcom wl WiFi driver for MacBook hardware.
-# broadcom-wl is an akmod (source kernel module), so it must be compiled against
-# the kernel baked into this image. We detect that kernel version from the
-# installed kernel-core package (NOT `uname -r`, which is the build host's kernel)
-# and force akmods to build for it. The resulting wl.ko lands in /usr/lib/modules.
-RUN dnf5 install -y \
-        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
-        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" && \
-    KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
-    dnf5 install -y akmods "kernel-devel-${KERNEL_VERSION}" broadcom-wl && \
-    akmods --force --kernels "${KERNEL_VERSION}" && \
-    modinfo -k "${KERNEL_VERSION}" wl && \
     dnf5 clean all
 
 # Enable automatic image updates via bootc.
