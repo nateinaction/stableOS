@@ -38,24 +38,28 @@ jobs:
       - name: Clear GitHub Actions runner cache
         run: rm -rf /opt/hostedtoolcache
 
+      # Build with podman into containers-storage, matching local `make build`.
+      # Always tag :latest so the structure tests have a stable ref to target;
+      # :latest is only *published* to GHCR on main (see the push step below).
       - name: Build image
-        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
-        with:
-          containerfiles: |
-            ./Containerfile
-          image: stableos
-          tags: ${{ github.ref == 'refs/heads/main' && 'latest' || '' }} ${{ github.sha }}
+        run: |
+          podman build \
+            -f ./Containerfile \
+            -t stableos:latest \
+            -t "stableos:${{ github.sha }}" \
+            .
 
-      # buildah stores the image in podman's containers-storage, but
-      # container-structure-test only supports the docker/tar drivers and our
-      # suite needs command tests (docker driver). Copy the image into the
-      # runner's Docker daemon so the test can find stableos:latest. The SHA
-      # tag is always present; the latest tag is only applied on main.
-      - name: Load image into Docker for structure tests
-        run: podman push stableos:${{ github.sha }} docker-daemon:stableos:latest
-
+      # container-structure-test's docker driver speaks the Docker API, but
+      # podman ships a Docker-compatible socket. Point DOCKER_HOST at it so the
+      # tests read the image straight from containers-storage -- the same path
+      # used locally. This avoids copying into the runner's Docker daemon,
+      # whose overlay2 driver caps images at 127 layers ("max depth exceeded").
       - name: Run container structure tests
-        run: make test-container-structure
+        run: |
+          podman system service --time=0 unix:///tmp/podman.sock &
+          timeout 30 bash -c 'until [ -S /tmp/podman.sock ]; do sleep 0.5; done'
+          export DOCKER_HOST=unix:///tmp/podman.sock
+          make test-container-structure
 
       - name: Login to GHCR
         if: github.ref == 'refs/heads/main'
