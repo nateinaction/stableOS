@@ -58,26 +58,12 @@ iso: output/bootiso/stableos.iso ## Build bootable ISO for installation
 ##@ Linting and Formatting
 
 .PHONY: pre-commit-install
-pre-commit-install: uv ## Install pre-commit hooks
+pre-commit-install: uv hadolint ## Install pre-commit hooks
 	@$(UVX) pre-commit install > /dev/null
 
 .PHONY: fmt
 fmt: pre-commit-install ## Run pre-commit hooks against all files
 	$(UVX) pre-commit run --all-files
-
-.PHONY: lint-containerfile
-lint-containerfile: hadolint ## Lint Containerfile with hadolint
-	$(HADOLINT) $(CONTAINERFILE) --failure-threshold warning
-
-.PHONY: lint-workflows
-lint-workflows: actionlint ## Lint GitHub Actions workflows
-	$(ACTIONLINT)
-
-.PHONY: lint-fish
-lint-fish: ## Check fish config syntax
-	@# TODO(nateinaction): Download fish binary directly when MacOS builds are available in Github
-	@# which is suppoesed to be soon according to the fish-shell release page: https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
-	fish --no-execute files/skel/.config/fish/config.fish
 
 ##@ Testing
 
@@ -112,7 +98,6 @@ OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 ## Tool Binaries
 HADOLINT ?= $(LOCALBIN)/hadolint-$(HADOLINT_VERSION)
-ACTIONLINT ?= $(LOCALBIN)/actionlint-$(ACTIONLINT_VERSION)
 CONTAINER_STRUCTURE_TEST ?= $(LOCALBIN)/container-structure-test-$(CONTAINER_STRUCTURE_TEST_VERSION)
 PODMAN ?= $(LOCALBIN)/podman-$(PODMAN_VERSION)
 UV_DIR ?= $(LOCALBIN)/uv-$(UV_VERSION)
@@ -120,7 +105,6 @@ UV ?= $(UV_DIR)/uv
 UVX ?= $(UV_DIR)/uvx
 
 ## Tool Versions
-ACTIONLINT_VERSION ?= v1.7.12
 CONTAINER_STRUCTURE_TEST_VERSION ?= v1.22.1
 HADOLINT_VERSION ?= v2.14.0
 PODMAN_VERSION ?= v6.0.0
@@ -133,17 +117,6 @@ $(HADOLINT): $(LOCALBIN)
 	HADOLINT_OS=`[ "$(OS)" = "darwin" ] && echo macos || echo linux`; \
 	curl -o $(HADOLINT) -L https://github.com/hadolint/hadolint/releases/download/$(HADOLINT_VERSION)/hadolint-$$HADOLINT_OS-$(ARCH); \
 	chmod +x $(HADOLINT)
-
-.PHONY: actionlint
-actionlint: $(ACTIONLINT) ## Download actionlint locally if necessary
-
-$(ACTIONLINT): $(LOCALBIN)
-	curl -o /tmp/actionlint.tar.gz -sL https://github.com/rhysd/actionlint/releases/download/$(ACTIONLINT_VERSION)/actionlint_$(ACTIONLINT_VERSION:v%=%)_$(OS)_$(ARCH).tar.gz && \
-		tar -xzf /tmp/actionlint.tar.gz -C $(LOCALBIN) actionlint && \
-		mv $(LOCALBIN)/actionlint $(ACTIONLINT) && \
-		chmod +x $(ACTIONLINT) && \
-		touch $(ACTIONLINT) && \
-		rm /tmp/actionlint.tar.gz
 
 .PHONY: container-structure-test
 container-structure-test: $(CONTAINER_STRUCTURE_TEST) ## Download container-structure-test locally if necessary

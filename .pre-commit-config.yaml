@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
@@ -14,22 +14,24 @@ repos:
   hooks:
     - id: codespell
 
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.7.12
+  hooks:
+    - id: actionlint
+
 - repo: local
   hooks:
     - id: lint-containerfile
       name: Lint Containerfile
-      entry: make lint-containerfile
+      entry: ./build/hadolint-v2.14.0
       language: system
-      pass_filenames: false
+      types: [dockerfile]
+      args: ['--failure-threshold', 'warning']
 
-    - id: lint-workflows
-      name: Lint GitHub Actions workflows
-      entry: make lint-workflows
-      language: system
-      pass_filenames: false
-
+    # TODO(nateinaction): Download fish binary directly when MacOS builds are available in Github
+    # which is suppoesed to be soon according to the fish-shell release page: https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
     - id: lint-fish
       name: Check fish config syntax
-      entry: make lint-fish
+      entry: fish --no-execute files/skel/.config/fish/config.fish
       language: system
       pass_filenames: false
