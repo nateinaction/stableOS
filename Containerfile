@@ -26,6 +26,28 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packag
     dnf5 install -y gh && \
     dnf5 clean all
 
+# Install the Broadcom wl WiFi driver for MacBook hardware.
+#
+# broadcom-wl ships as an akmod (source module) that must be compiled against the
+# kernel baked into this image. Two things make this tricky in a container build:
+#
+#  1. Kernel version: we build for the image's kernel-core, NOT `uname -r` (which
+#     is the build host's kernel). The matching kernel-devel must exist in the
+#     repos, which requires a stable Fedora base.
+#  2. Root: akmodsbuild refuses to run as root (it treats a writable /var as
+#     "root"). The akmod-wl %post scriptlet builds directly as root and fails, so
+#     we install it with scriptlets disabled and instead invoke the `akmods`
+#     wrapper, which drops to the unprivileged `akmods` user to compile wl.ko.
+RUN dnf5 install -y \
+        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" && \
+    KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    dnf5 install -y akmods "kernel-devel-${KERNEL_VERSION}" && \
+    dnf5 install -y --setopt=tsflags=noscripts broadcom-wl && \
+    akmods --force --kernels "${KERNEL_VERSION}" && \
+    modinfo -k "${KERNEL_VERSION}" wl && \
+    dnf5 clean all
+
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
 
