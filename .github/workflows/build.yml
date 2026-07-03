@@ -33,11 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
-      # We need lots of disk space for the build, so clear the GitHub Actions runner cache to free up space.
-      # Based on https://github.com/orgs/community/discussions/25678
-      - name: Clear GitHub Actions runner cache
-        run: rm -rf /opt/hostedtoolcache
-
       # Build with podman into containers-storage, matching local `make build`.
       # Always tag :latest so the structure tests have a stable ref to target;
       # :latest is only *published* to GHCR on main (see the push step below).
@@ -76,40 +71,3 @@ jobs:
           image: stableos
           tags: latest ${{ github.sha }}
           registry: ghcr.io/nateinaction
-
-      # Build the installer ISO by running bootc-image-builder directly instead
-      # of osbuild/bootc-image-builder-action -- the action's latest release
-      # (v0.0.2) is pinned to the deprecated Node 20, and this mirrors the
-      # Makefile's `make iso` so local and CI stay in sync. bib runs rootful and
-      # reads the image from /var/lib/containers/storage, so log root in and pull
-      # the copy we just pushed to GHCR first. --rootfs is required because the
-      # COSMIC base declares no default root filesystem. Gated to main because
-      # that's the only time the image is pushed.
-      - name: Build ISO
-        id: build-iso
-        if: github.ref == 'refs/heads/main'
-        env:
-          IMAGE: ghcr.io/nateinaction/stableos:${{ github.sha }}
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
-          sudo podman pull "$IMAGE"
-          mkdir -p output
-          sudo podman run --rm --privileged \
-            --security-opt label=type:unconfined_t \
-            --volume /var/lib/containers/storage:/var/lib/containers/storage \
-            --volume ./output:/output \
-            --volume ./config.toml:/config.toml:ro \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            build \
-            --type iso \
-            --rootfs btrfs \
-            --local "$IMAGE"
-          sudo chown -R "$USER" output
-
-      - name: Upload Artifact
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: iso
-          path: output
-          if-no-files-found: error
