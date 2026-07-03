@@ -28,11 +28,8 @@ repos:
       types: [dockerfile]
       args: ['--failure-threshold', 'warning']
 
-    # TODO(nateinaction): Download fish binary directly when MacOS builds are available in Github
-    # which is suppoesed to be soon according to the fish-shell release page: https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
     - id: lint-fish
       name: Check fish config syntax
-      entry: fish --no-execute files/skel/.config/fish/config.fish
+      entry: make lint-fish
       language: system
       pass_filenames: false
-      stages: [commit]

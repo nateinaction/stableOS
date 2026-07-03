@@ -57,12 +57,20 @@ iso: output/bootiso/stableos.iso ## Build bootable ISO for installation
 ##@ Linting and Formatting
 
 .PHONY: pre-commit-install
-pre-commit-install: uv hadolint ## Install pre-commit hooks
+pre-commit-install: uv ## Install pre-commit hooks
 	@$(UVX) pre-commit install > /dev/null
 
 .PHONY: fmt
-fmt: pre-commit-install ## Run pre-commit hooks against all files
+fmt: pre-commit-install hadolint fish ## Run pre-commit hooks against all files
 	$(UVX) pre-commit run --all-files
+
+.PHONY: lint-fish
+lint-fish: fish ## Check fish config syntax
+	@if [ "$(OS)" = "darwin" ]; then \
+		fish --no-execute files/skel/.config/fish/config.fish; \
+	else \
+		$(FISH_BIN) --no-execute files/skel/.config/fish/config.fish; \
+	fi
 
 ##@ Testing
 
@@ -99,6 +107,7 @@ OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 HADOLINT ?= $(LOCALBIN)/hadolint-$(HADOLINT_VERSION)
 CONTAINER_STRUCTURE_TEST ?= $(LOCALBIN)/container-structure-test-$(CONTAINER_STRUCTURE_TEST_VERSION)
 PODMAN ?= $(LOCALBIN)/podman-$(PODMAN_VERSION)
+FISH_BIN ?= $(LOCALBIN)/fish-$(FISH_VERSION)
 UV_DIR ?= $(LOCALBIN)/uv-$(UV_VERSION)
 UV ?= $(UV_DIR)/uv
 UVX ?= $(UV_DIR)/uvx
@@ -107,7 +116,23 @@ UVX ?= $(UV_DIR)/uvx
 CONTAINER_STRUCTURE_TEST_VERSION ?= v1.22.1
 HADOLINT_VERSION ?= v2.14.0
 PODMAN_VERSION ?= v6.0.0
+FISH_VERSION ?= 4.8.0
 UV_VERSION ?= 0.11.26
+
+.PHONY: fish
+fish: $(FISH_BIN) ## Download fish binary locally if necessary (non-macOS only)
+
+# TODO(nateinaction): Use directly downloaded fish binary on MacOS when builds are available in Github
+# which is suppoesed to be soon according to the fish-shell release page:
+# https://github.com/fish-shell/fish-shell/releases/tag/4.8.0
+$(FISH_BIN): $(LOCALBIN)
+	@FISH_ARCH=`[ "$(ARCH)" = "amd64" ] && echo x86_64 || ([ "$(ARCH)" = "arm64" ] && echo aarch64 || echo $(ARCH))`; \
+		curl -o /tmp/fish-$(FISH_VERSION).tar.xz -sL https://github.com/fish-shell/fish-shell/releases/download/$(FISH_VERSION)/fish-$(FISH_VERSION)-linux-$$FISH_ARCH.tar.xz && \
+		tar -xJf /tmp/fish-$(FISH_VERSION).tar.xz -C /tmp && \
+		mv /tmp/fish $(FISH_BIN) && \
+		rm /tmp/fish-$(FISH_VERSION).tar.xz && \
+		chmod +x $(FISH_BIN) && \
+		touch $(FISH_BIN)
 
 .PHONY: hadolint
 hadolint: $(HADOLINT) ## Download hadolint locally if necessary
