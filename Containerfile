@@ -40,6 +40,19 @@ RUN dnf5 -y config-manager addrepo \
     dnf5 install -y claude-code && \
     dnf5 clean all
 
+# Add 1Password repo and install the 1Password desktop app.
+RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 -y config-manager addrepo \
+        --id=1password \
+        --set=name="1Password Stable Channel" \
+        --set=baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch \
+        --set=enabled=1 \
+        --set=gpgcheck=1 \
+        --set=repo_gpgcheck=1 \
+        --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 install -y 1password && \
+    dnf5 clean all
+
 # Install the Broadcom wl WiFi driver for MacBook hardware.
 #
 # broadcom-wl ships as an akmod (source module) that must be compiled against the

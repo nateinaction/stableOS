@@ -29,6 +29,7 @@ stableOS includes a curated set of applications and tools baked into the image:
 - **Tailscale** — Secure networking daemon (run `sudo tailscale up` after first boot to configure).
 - **chezmoi** — Dotfile manager for reproducible, versioned user configuration.
 - **Claude Code** — Anthropic's agentic coding CLI (run `claude` to start; requires a Claude account).
+- **1Password** — Password manager + browser extension (installed via the official 1Password RPM repo).
 - **Flathub** — Preconfigured on first boot for easy Flatpak app installation via COSMIC Store.
 
 ### Recommended Post-Install Apps
@@ -36,14 +37,12 @@ stableOS includes a curated set of applications and tools baked into the image:
 Install these via Flatpak (COSMIC Store or `flatpak install`) after first boot:
 
 - **Firefox** — `flatpak install flathub org.mozilla.firefox` (web browser with great Flatpak integration)
-- **1Password** — `flatpak install flathub com.onepassword.OnePassword` (password manager + browser extension)
 
 ### Post-Install Setup
 
 1. **Install apps via COSMIC Store or Flatpak CLI:** On first boot, Flathub is configured. Use COSMIC Store to browse and install, or install from the terminal:
    ```bash
    flatpak install flathub org.mozilla.firefox
-   flatpak install flathub com.onepassword.OnePassword
    ```
 
 2. **Tailscale:** After starting Tailscale, authenticate with your account:
@@ -135,7 +134,7 @@ sudo bootc rollback
 
 ## Notes
 
-- **Flatpak-first approach:** GUI applications (Firefox, 1Password) are installed via Flatpak for better portability and security. System daemons (Tailscale) remain RPM-based.
+- **Flatpak-first approach:** GUI applications like Firefox are installed via Flatpak for better portability and security. System daemons (Tailscale) and apps that ship an official RPM repo (1Password) remain RPM-based.
 - **Image mode:** `/` is immutable; system updates are applied to new image layers via `bootc upgrade`. User data in `/home` persists across updates.
 
 ## Future Enhancements
