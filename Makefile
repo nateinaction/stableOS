@@ -78,7 +78,7 @@ lint-fish: fish ## Check fish config syntax
 test: test-container-structure ## Run all tests
 
 .PHONY: test-container-structure
-test-container-structure: build container-structure-test ## Run container structure tests
+test-container-structure: container-structure-test ## Run container structure tests
 	$(CONTAINER_STRUCTURE_TEST) test --image $(IMAGE_NAME):$(IMAGE_TAG) --config container-structure-test.yaml
 
 ##@ Cleanup
