@@ -33,6 +33,11 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
+      # We need lots of disk space for the build, so clear the GitHub Actions runner cache to free up space.
+      # Based on https://github.com/orgs/community/discussions/25678
+      - name: Clear GitHub Actions runner cache
+        run: rm -rf /opt/hostedtoolcache
+
       - name: Build image
         uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
         with:
