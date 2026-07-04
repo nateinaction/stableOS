@@ -135,22 +135,19 @@ jobs:
       - name: Install cosign
         if: github.ref == 'refs/heads/main'
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          # Pin to cosign v2.x. cosign v3 defaults to storing signatures as OCI
-          # 1.1 referrers, but containers/image (skopeo/podman/bootc, driven by
-          # use-sigstore-attachments in registries.d/ghcr.yaml) only reads the
-          # legacy tag-based `<digest>.sig` attachment. cosign v2 writes that
-          # legacy attachment by default. See renovate.json for the matching pin.
-          cosign-release: v2.6.3
 
       # Sign the pushed manifest by digest (not tag -- tags are mutable, and
       # cosign requires by-digest refs). :latest and :<sha> share one manifest
       # digest, so this single signature covers both. The baked-in policy.json
       # verifies this signature against cosign.pub on every `bootc upgrade`.
       #
-      # Signature format is determined by the cosign binary version (pinned to
-      # v2.x above), which writes the legacy tag-based `<digest>.sig` attachment
-      # that bootc reads.
+      # Use legacy format flags for bootc/containers-image compatibility:
+      #   --new-bundle-format=false: Use old Sigstore bundle format (not the new
+      #     v3 format), which containers/image can verify.
+      # cosign v3 defaults to OCI 1.1 referrers + new bundle format, neither of
+      # which containers-image (skopeo/podman/bootc) supports yet:
+      #   https://github.com/containers/container-libs/issues/388 (open)
+      #   https://github.com/coreos/rpm-ostree/issues/5509 (context)
       - name: Sign image
         if: github.ref == 'refs/heads/main'
         env:
@@ -158,5 +155,7 @@ jobs:
           COSIGN_PASSWORD: ""
         run: |
           cosign sign --yes \
+            --new-bundle-format=false \
+            --use-signing-config=false \
             --key env://COSIGN_PRIVATE_KEY \
             ghcr.io/nateinaction/stableos@${{ steps.push.outputs.digest }}

@@ -26,27 +26,6 @@
         "quay.io/fedora-ostree-desktops/cosmic-atomic"
       ],
       "allowedVersions": "<=44"
-    },
-    {
-      "description": "Stay on cosign v2.x: v3 defaults to OCI 1.1 referrer signatures that bootc/containers-image can't read (it only reads the legacy `<digest>.sig` tag). See the Install cosign step in build.yml.",
-      "matchDepNames": [
-        "sigstore/cosign"
-      ],
-      "allowedVersions": "<3.0.0"
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Track the cosign binary version pinned via the cosign-installer `cosign-release` input.",
-      "managerFilePatterns": [
-        "/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"
-      ],
-      "matchStrings": [
-        "cosign-release:\\s*(?<currentValue>v[0-9.]+)"
-      ],
-      "depNameTemplate": "sigstore/cosign",
-      "datasourceTemplate": "github-releases"
     }
   ],
   "dockerfile": {
