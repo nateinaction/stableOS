@@ -29,10 +29,9 @@ fileExistenceTests:
   - name: 'registries.d sigstore config exists'
     path: '/etc/containers/registries.d/ghcr.yaml'
     shouldExist: true
-  - name: 'nix.conf enables flakes'
+  - name: 'nix.conf exists'
     path: '/etc/nix/nix.conf'
     shouldExist: true
-    contents: ['nix-command flakes']
   - name: 'nix store bind-mount unit exists'
     path: '/usr/lib/systemd/system/nix.mount'
     shouldExist: true
@@ -56,6 +55,9 @@ fileContentTests:
   - name: 'cosign public key is a PEM public key'
     path: '/etc/pki/containers/stableos.pub'
     expectedContents: ['-----BEGIN PUBLIC KEY-----']
+  - name: 'nix.conf enables flakes'
+    path: '/etc/nix/nix.conf'
+    expectedContents: ['nix-command flakes']
 
 commandTests:
   - name: 'tailscale is installed'
