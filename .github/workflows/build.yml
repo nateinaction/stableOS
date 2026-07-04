@@ -156,6 +156,6 @@ jobs:
         run: |
           cosign sign --yes \
             --new-bundle-format=false \
-            --use-signing-config=false
+            --use-signing-config=false \
             --key env://COSIGN_PRIVATE_KEY \
             ghcr.io/nateinaction/stableos@${{ steps.push.outputs.digest }}
