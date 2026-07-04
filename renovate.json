@@ -28,7 +28,7 @@
       "allowedVersions": "<=44"
     },
     {
-      "description": "Stay on cosign v2.x: v3 defaults to OCI 1.1 referrer signatures that bootc/containers-image can't read (it only reads the legacy `<digest>.sig` tag). See the Install cosign step in build.yml.",
+      "description": "Stay on cosign v2.x: v3 defaults to OCI 1.1 referrer signatures in the new bundle format that bootc/containers-image can't read (it only reads the legacy `<digest>.sig` tag). See the Install cosign step in build.yml for when we can upgrade. Tracking: https://github.com/containers/container-libs/issues/388",
       "matchDepNames": [
         "sigstore/cosign"
       ],
