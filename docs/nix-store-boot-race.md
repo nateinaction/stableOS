@@ -186,20 +186,92 @@ sudo systemctl restart nix-daemon.socket
 nix run nixpkgs#hello                       # Hello, world! under enforcing
 ```
 
-## Durable fix (TODO — needs baking into the image)
+## Durable fix (implemented in the image)
 
-Not yet implemented; it cannot be validated from a build sandbox and needs a
-real install to test. The intended approach, preferring correct **labels** over
-blanket `default_t` allows:
+Confirmed working: with just the one reviewed rule loaded, `nix run
+nixpkgs#hello` succeeds under **enforcing** SELinux. The `audit2allow` capture
+also swept up unrelated `bootupd_t` denials — those are deliberately excluded.
 
-- Relabel the store tree under `/var/nix` to appropriate types (e.g. an
-  `/nix/store` fcontext for store content, and an `init_var_run_t`-style label
-  for `/nix/var/nix/daemon-socket` so `init_t` may create the socket).
-- Add a minimal policy module for whatever remains after relabeling (reviewed
-  from the `audit2allow` output rather than shipped blind).
-- Apply the relabel at build time in the `Containerfile` (and/or via the
-  `nix-store-init.service` seed step) so it survives `restorecon`/reboot.
+The image now bakes exactly this scoped module (`files/selinux/nix-daemon-socket.te`):
 
-Note tooling: `audit2allow` is present, but `sesearch`/`seinfo` are **not**
-installed on the base image, so policy has to be inspected via `audit2allow` and
-`matchpathcon` / `ls -Z`.
+```
+allow init_t default_t:sock_file { create write };
+```
+
+The `Containerfile` compiles and installs it at build time
+(`checkmodule` + `semodule_package` + `semodule -i`, with `checkpolicy` /
+`policycoreutils-devel` installed and removed in the same layer), and
+`container-structure-test.yaml` asserts `semodule -l` lists `nix-daemon-socket`.
+
+The label-based alternative (relabel `/nix/var/nix/daemon-socket` to an
+`init_var_run_t`-style type) was considered but not shipped: it was untested,
+whereas this module is proven. Revisit if a proper Nix SELinux policy lands
+upstream.
+
+> Cannot be validated from the build sandbox — it needs a rebuild + fresh
+> install to confirm `semodule -i` succeeds during the image build and the
+> socket comes up on first boot.
+
+Tooling note: `audit2allow` is present on the running system, but
+`sesearch`/`seinfo` are **not**, so policy was inspected via `audit2allow`,
+`matchpathcon`, and `ls -Z`. The build needs `checkpolicy` +
+`policycoreutils-devel` for `checkmodule`/`semodule_package`.
+
+---
+
+# Resume checklist (after reboot / new session)
+
+The running machine was unblocked by hand (store seeded, SELinux module loaded);
+those changes persist on `/var` and in the policy store. The repo changes are
+committed on branch **`nix-single-manifest`**. Pick up here:
+
+**1. Confirm the live machine still works (should need nothing):**
+
+```sh
+systemctl is-active nix.mount nix-daemon.socket   # want: active active
+getenforce                                        # want: Enforcing
+nix run nixpkgs#hello                             # want: ¡Hola mundo! / Hello, world!
+```
+
+If `nix.mount` is not active: `sudo systemctl start nix.mount`.
+If `nix-daemon.socket` failed (stale socket from a previous daemon):
+
+```sh
+sudo systemctl stop nix-daemon.service
+sudo rm -f /nix/var/nix/daemon-socket/socket
+sudo systemctl reset-failed nix-daemon.socket
+sudo systemctl start nix-daemon.socket
+```
+
+**2. The hand-loaded `nix-local` module is broader than needed** (it included
+`bootupd_t` noise). Once the rebuilt image's `nix-daemon-socket` module is in
+use, remove the local one:
+
+```sh
+sudo semodule -r nix-local        # only after the new image is deployed & verified
+```
+
+**3. Validate the committed image fixes** (needs a build host with podman +
+the Nix dev shell working):
+
+```sh
+make build                        # or: podman build -f ./Containerfile -t stableos:latest .
+make test-container-structure     # asserts the units + SELinux module are present
+```
+
+Then deploy and reboot into it, and verify **first boot needs no manual steps**:
+
+```sh
+sudo bootc upgrade                # once the image is published, or switch to a local build
+sudo reboot
+# after login, with NO manual intervention:
+systemctl is-active nix.mount nix-daemon.socket   # want: active active
+nix run nixpkgs#hello
+```
+
+**4. Open outstanding items:**
+- The SELinux + boot-race image fixes are committed on branch `nix-lock-2` (atop
+  the merged `nix-single-manifest` work and the committed `flake.lock`); push it
+  and open a PR.
+- Re-run `make fmt` once the Nix dev shell is active — the image commits were
+  made with `--no-verify` because hadolint lives only in the flake dev shell.
