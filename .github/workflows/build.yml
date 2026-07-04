@@ -142,8 +142,6 @@ jobs:
       # verifies this signature against cosign.pub on every `bootc upgrade`.
       #
       # Use legacy format flags for bootc/containers-image compatibility:
-      #   --registry-referrers-mode=legacy: Store signature as tag-based
-      #     `<digest>.sig` attachment (not OCI 1.1 referrer), which bootc reads.
       #   --new-bundle-format=false: Use old Sigstore bundle format (not the new
       #     v3 format), which containers/image can verify.
       # cosign v3 defaults to OCI 1.1 referrers + new bundle format, neither of
@@ -157,7 +155,7 @@ jobs:
           COSIGN_PASSWORD: ""
         run: |
           cosign sign --yes \
-            --registry-referrers-mode=legacy \
             --new-bundle-format=false \
+            --use-signing-config=false
             --key env://COSIGN_PRIVATE_KEY \
             ghcr.io/nateinaction/stableos@${{ steps.push.outputs.digest }}
