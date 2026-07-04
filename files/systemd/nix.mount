@@ -7,10 +7,17 @@
 # image upgrades, so we keep the store in /var/nix and bind it onto /nix.
 #
 # The unit filename MUST be nix.mount to match the mountpoint /nix.
+#
+# nix-store-init.service seeds /var/nix and must run first. Requiring and
+# ordering after it fixes the first-boot race that the old
+# ConditionPathExists=/var/nix guard caused: /var/nix did not yet exist when the
+# mount was evaluated, so it was silently skipped and never retried. See
+# docs/nix-store-boot-race.md.
 [Unit]
 Description=Bind mount /var/nix onto /nix
 Before=nix-daemon.service nix-daemon.socket
-ConditionPathExists=/var/nix
+Requires=nix-store-init.service
+After=nix-store-init.service
 
 [Mount]
 What=/var/nix
