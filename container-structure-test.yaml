@@ -144,6 +144,11 @@ commandTests:
     command: 'systemctl'
     args: ['is-enabled', 'nix-daemon.socket']
     exitCode: 0
+  - name: 'nix-daemon-socket SELinux module is installed'
+    command: 'semodule'
+    args: ['-l']
+    expectedOutput: ['(?m)^nix-daemon-socket$']
+    exitCode: 0
   - name: 'signature policy requires signing for the stableos repo'
     command: 'grep'
     args: ['-q', 'ghcr.io/nateinaction/stableos', '/etc/containers/policy.json']

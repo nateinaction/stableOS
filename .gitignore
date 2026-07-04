@@ -9,6 +9,9 @@ build/
 result
 result-*
 
+# audit2allow scratch output (local SELinux debugging)
+/nix-local.*
+
 # cosign private signing key -- never commit; only cosign.pub is tracked
 cosign.key
 *.key

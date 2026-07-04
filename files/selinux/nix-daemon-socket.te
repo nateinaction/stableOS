@@ -1,0 +1,33 @@
+# Allow systemd to create the nix-daemon listening socket.
+#
+# The Nix store lives on /var (the /var/nix btrfs subvolume) and is bind-mounted
+# onto /nix at boot -- so every path under /nix is labeled default_t, and this
+# image ships no Nix SELinux policy (no nix_* types, no fcontext, and the Fedora
+# nix-core/nix-daemon RPMs ship none). nix-daemon is socket-activated, so systemd
+# (init_t) must create the listening socket at /nix/var/nix/daemon-socket/socket.
+# Under enforcing SELinux init_t may not create a sock_file in a default_t
+# directory, so the socket unit fails with "Permission denied" and Nix is
+# unusable. See docs/nix-store-boot-race.md.
+#
+# `unlink` is also required: the socket lives on the persistent /var/nix
+# subvolume (bind-mounted onto /nix), so the socket file survives reboots
+# (nix-daemon.socket does not set RemoveOnStop). On every boot after the first,
+# systemd must unlink the leftover socket before rebinding; without this the
+# unit fails "Failed to create listening socket" and `nix` reports the daemon
+# socket "Connection refused". First boot works because the freshly seeded store
+# has no socket file yet -- the failure only surfaces on the second and later
+# boots.
+#
+# These rules were derived from the observed AVCs (create, write, unlink) and
+# confirmed to make `nix run nixpkgs#hello` work under enforcing across reboots.
+# They are intentionally scoped to exactly these permissions; unrelated denials
+# (e.g. bootupd_t) are excluded.
+module nix-daemon-socket 1.0;
+
+require {
+    type init_t;
+    type default_t;
+    class sock_file { create write unlink };
+}
+
+allow init_t default_t:sock_file { create write unlink };

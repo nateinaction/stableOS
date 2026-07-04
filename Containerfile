@@ -108,6 +108,21 @@ COPY files/systemd/nix-store-init.service /usr/lib/systemd/system/
 COPY files/systemd/nix.mount /usr/lib/systemd/system/
 COPY files/systemd/nix-daemon.service.d/ /usr/lib/systemd/system/nix-daemon.service.d/
 
+# Install a scoped SELinux policy module so systemd may create the nix-daemon
+# socket under /nix (labeled default_t because the store lives on /var). Without
+# it the socket unit fails "Permission denied" under enforcing and Nix is
+# unusable. checkpolicy/policycoreutils-devel provide checkmodule and
+# semodule_package; they are build-only, so install, compile, and remove them in
+# one layer. See docs/nix-store-boot-race.md.
+COPY files/selinux/nix-daemon-socket.te /tmp/nix-daemon-socket.te
+RUN dnf5 install -y checkpolicy policycoreutils-devel && \
+    checkmodule -M -m -o /tmp/nix-daemon-socket.mod /tmp/nix-daemon-socket.te && \
+    semodule_package -o /tmp/nix-daemon-socket.pp -m /tmp/nix-daemon-socket.mod && \
+    semodule -i /tmp/nix-daemon-socket.pp && \
+    dnf5 remove -y checkpolicy policycoreutils-devel && \
+    dnf5 clean all && \
+    rm -f /tmp/nix-daemon-socket.te /tmp/nix-daemon-socket.mod /tmp/nix-daemon-socket.pp
+
 # Enable the Nix store bind mount and the socket-activated daemon. nix.mount
 # pulls in nix-store-init.service via its Requires=, so enabling the mount is
 # enough; the daemon is socket-activated.

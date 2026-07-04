@@ -1,0 +1,4 @@
+# Words codespell should not treat as typos.
+# "te" is the SELinux type-enforcement source extension (nix-daemon-socket.te),
+# not a misspelling of the/be/we/to.
+te
