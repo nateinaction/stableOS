@@ -125,7 +125,7 @@ jobs:
 
       - name: Install cosign
         if: github.ref == 'refs/heads/main'
-        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+        uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
 
       # Sign the pushed manifest by digest (not tag -- tags are mutable, and
       # cosign requires by-digest refs). :latest and :<sha> share one manifest
