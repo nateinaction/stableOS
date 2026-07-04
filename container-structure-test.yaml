@@ -29,11 +29,35 @@ fileExistenceTests:
   - name: 'registries.d sigstore config exists'
     path: '/etc/containers/registries.d/ghcr.yaml'
     shouldExist: true
+  - name: 'nix.conf exists'
+    path: '/etc/nix/nix.conf'
+    shouldExist: true
+  - name: 'nix store bind-mount unit exists'
+    path: '/usr/lib/systemd/system/nix.mount'
+    shouldExist: true
+  - name: 'nix-daemon mount-ordering drop-in exists'
+    path: '/usr/lib/systemd/system/nix-daemon.service.d/10-nix-mount.conf'
+    shouldExist: true
+  - name: 'nix store tmpfiles config exists'
+    path: '/usr/lib/tmpfiles.d/nix.conf'
+    shouldExist: true
+  - name: 'nix-direnv direnvrc exists'
+    path: '/usr/share/nix-direnv/direnvrc'
+    shouldExist: true
+  - name: 'direnv skeleton config exists'
+    path: '/etc/skel/.config/direnv/direnvrc'
+    shouldExist: true
+  - name: 'nix bind-mount target directory exists'
+    path: '/nix'
+    shouldExist: true
 
 fileContentTests:
   - name: 'cosign public key is a PEM public key'
     path: '/etc/pki/containers/stableos.pub'
     expectedContents: ['-----BEGIN PUBLIC KEY-----']
+  - name: 'nix.conf enables flakes'
+    path: '/etc/nix/nix.conf'
+    expectedContents: ['nix-command flakes']
 
 commandTests:
   - name: 'tailscale is installed'
@@ -80,6 +104,14 @@ commandTests:
     command: 'command'
     args: ['-v', '1password']
     exitCode: 0
+  - name: 'nix is installed'
+    command: 'command'
+    args: ['-v', 'nix']
+    exitCode: 0
+  - name: 'direnv is installed'
+    command: 'command'
+    args: ['-v', 'direnv']
+    exitCode: 0
   - name: 'broadcom wl kernel module is built'
     command: 'sh'
     args: ['-c', 'find /usr/lib/modules -name "wl.ko*" | grep -q .']
@@ -103,6 +135,14 @@ commandTests:
   - name: 'flathub-setup.service is enabled'
     command: 'systemctl'
     args: ['is-enabled', 'flathub-setup.service']
+    exitCode: 0
+  - name: 'nix.mount is enabled'
+    command: 'systemctl'
+    args: ['is-enabled', 'nix.mount']
+    exitCode: 0
+  - name: 'nix-daemon.socket is enabled'
+    command: 'systemctl'
+    args: ['is-enabled', 'nix-daemon.socket']
     exitCode: 0
   - name: 'signature policy requires signing for the stableos repo'
     command: 'grep'

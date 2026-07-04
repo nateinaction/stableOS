@@ -22,3 +22,13 @@ end
 if type -q zoxide
     zoxide init fish | source
 end
+
+# Add packages installed with `nix profile install` to PATH.
+if not contains $HOME/.nix-profile/bin $PATH
+    set -gx PATH $HOME/.nix-profile/bin $PATH
+end
+
+# Hook direnv so project .envrc files (e.g. `use flake`) auto-load dev environments.
+if type -q direnv
+    direnv hook fish | source
+end

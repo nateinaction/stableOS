@@ -1,0 +1,22 @@
+# Bind-mount the persistent, per-machine /var/nix onto /nix.
+#
+# On this immutable-root bootc system /nix is not writable, and Nix refuses a
+# symlinked /nix. The binary cache (cache.nixos.org) ships artifacts hard-coded
+# to absolute /nix/store paths, so the store must live at a real /nix for cache
+# substitution to work. /var is machine-local, writable, and persists across
+# image upgrades, so we keep the store in /var/nix and bind it onto /nix.
+#
+# The unit filename MUST be nix.mount to match the mountpoint /nix.
+[Unit]
+Description=Bind mount /var/nix onto /nix
+Before=nix-daemon.service nix-daemon.socket
+ConditionPathExists=/var/nix
+
+[Mount]
+What=/var/nix
+Where=/nix
+Type=none
+Options=bind
+
+[Install]
+WantedBy=local-fs.target
