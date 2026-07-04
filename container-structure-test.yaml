@@ -46,10 +46,9 @@ commandTests:
     command: 'command'
     args: ['-v', 'fzf']
     exitCode: 0
-  # z is a sourced shell function, not a PATH binary, so verify the package instead.
-  - name: 'z is installed'
-    command: 'rpm'
-    args: ['-q', 'z']
+  - name: 'zoxide is installed'
+    command: 'command'
+    args: ['-v', 'zoxide']
     exitCode: 0
   - name: 'claude is installed'
     command: 'command'
