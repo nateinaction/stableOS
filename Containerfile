@@ -26,8 +26,8 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
 # Install vim.
 RUN dnf5 install -y vim && dnf5 clean all
 
-# Install z (directory jumper) and fzf (fuzzy finder).
-RUN dnf5 install -y z fzf && dnf5 clean all
+# Install zoxide (directory jumper) and fzf (fuzzy finder).
+RUN dnf5 install -y zoxide fzf && dnf5 clean all
 
 # Install Alacritty terminal.
 RUN dnf5 install -y alacritty && dnf5 clean all
