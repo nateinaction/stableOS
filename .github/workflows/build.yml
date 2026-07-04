@@ -27,7 +27,9 @@ jobs:
         run: make fmt
 
   build:
-    runs-on: ubuntu-latest
+    # Pin to 24.04: the rechunk step below runs rootful podman (podman mount),
+    # which the rechunk action supports only on ubuntu-24.04, not -latest.
+    runs-on: ubuntu-24.04
     needs: lint
 
     steps:
@@ -55,6 +57,47 @@ jobs:
           timeout 30 bash -c 'until [ -S /tmp/podman.sock ]; do sleep 0.5; done'
           export DOCKER_HOST=unix:///tmp/podman.sock
           make test-container-structure
+
+      # Everything below runs on main only: rechunk the freshly built image into
+      # deterministic, package-boundary-aligned layers so bootc update deltas stay
+      # small, then publish the rechunked image. PRs stop after the tests above.
+
+      # rechunk shells out to `sudo podman` and reads from ROOT container storage,
+      # but the build above ran rootless. Copy the image into root storage so the
+      # action's `sudo podman create <ref>` can find it.
+      - name: Copy image into root storage for rechunk
+        if: github.ref == 'refs/heads/main'
+        run: podman save localhost/stableos:latest | sudo podman load
+
+      # Repartition into equal-sized package chunks. `prev-ref` (the last published
+      # image) keeps unchanged chunks byte-stable across builds; it is pulled by the
+      # action's internal skopeo and is a public GHCR package, so no login is needed
+      # here. rechunk strips the image config, so re-apply the Containerfile LABELs
+      # (title/description/source) via `labels` and stamp a YYMMDD version.
+      - name: Rechunk image
+        if: github.ref == 'refs/heads/main'
+        id: rechunk
+        uses: hhd-dev/rechunk@5fbe1d3a639615d2548d83bc888360de6267b1a2 # v1.2.4
+        with:
+          ref: localhost/stableos:latest
+          prev-ref: ghcr.io/nateinaction/stableos:latest
+          rechunk: ghcr.io/hhd-dev/rechunk:v1.2.4
+          version: "<date>"
+          labels: |
+            org.opencontainers.image.title=stableOS
+            org.opencontainers.image.description=Custom Fedora bootc COSMIC desktop environment
+            org.opencontainers.image.source=https://github.com/nateinaction/stableOS
+
+      # The rechunk output is an OCI-layout dir (chowned back to the runner), not in
+      # storage. Pull it back into rootless storage and re-tag it to the names the
+      # push step expects, so we publish the rechunked image rather than the original.
+      - name: Load rechunked image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          IMAGE_ID=$(podman pull "${{ steps.rechunk.outputs.ref }}")
+          podman tag "$IMAGE_ID" stableos:latest
+          podman tag "$IMAGE_ID" "stableos:${{ github.sha }}"
+          sudo rm -rf "${{ steps.rechunk.outputs.location }}"
 
       - name: Login to GHCR
         if: github.ref == 'refs/heads/main'
