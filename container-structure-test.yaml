@@ -53,6 +53,7 @@ commandTests:
   - name: 'claude is installed'
     command: 'command'
     args: ['-v', 'claude']
+    exitCode: 0
   - name: 'alacritty is installed'
     command: 'command'
     args: ['-v', 'alacritty']

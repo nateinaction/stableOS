@@ -4,7 +4,7 @@ A custom Fedora-based operating system built with **bootc** (bootable container)
 
 ## Overview
 
-stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:43`, providing a modern COSMIC desktop in an image-mode (immutable root filesystem) setup. The image is built via GitHub Actions and published to `ghcr.io/nateinaction/stableos` for easy distribution and updates.
+stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:44`, providing a modern COSMIC desktop in an image-mode (immutable root filesystem) setup. The image is built via GitHub Actions and published to `ghcr.io/nateinaction/stableos` for easy distribution and updates.
 
 ## Building Locally
 
@@ -129,8 +129,14 @@ sudo bootc rollback
 ## Repository Structure
 
 - `Containerfile` — Container image definition
-- `.github/workflows/build.yml` — GitHub Actions CI/CD pipeline
+- `Makefile` — Local build, lint, test, and ISO targets
+- `.github/workflows/build.yml` — Build, test, and publish the image to GHCR
+- `.github/workflows/iso.yml` — On-demand installer ISO build from a published image
 - `config.toml` — Optional bootc-image-builder configuration
+- `container-structure-test.yaml` — Image acceptance tests
+- `.pre-commit-config.yaml` — Formatting and lint hooks
+- `renovate.json` — Automated dependency updates
+- `files/` — Files copied into the image (systemd units, `/etc/skel` defaults, module configs)
 - `README.md` — This file
 - `.gitignore` — Git ignore rules
 
