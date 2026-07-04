@@ -1,0 +1,28 @@
+# Seed the persistent Nix store at /var/nix before it is bind-mounted onto /nix.
+#
+# /var/nix must both *exist* (nix.mount's source) and contain the store skeleton
+# (the `store/` dir with its sticky, akmods-group perms) before the bind mount
+# hides the read-only copy baked into the image. Relying on tmpfiles to create
+# /var/nix races the mount: tmpfiles runs in systemd-tmpfiles-setup.service
+# (ordered After=local-fs.target), but nix.mount is WantedBy=local-fs.target and
+# is evaluated first -- so on first boot its ConditionPathExists=/var/nix is
+# unmet, the mount is skipped and never retried, and /nix stays read-only.
+#
+# This oneshot runs Before=nix.mount and is pulled in by it (RequiredBy), so the
+# store is populated exactly when needed. It self-guards on /var/nix so it only
+# seeds once; /var persists across image upgrades. `cp -a` from the read-only
+# image /nix preserves ownership/permissions. The daemon-socket and builds dirs
+# under /nix/var/nix are created afterward by Nix's own tmpfiles, which succeed
+# once /nix is the writable bind mount.
+[Unit]
+Description=Initialize persistent Nix store at /var/nix
+DefaultDependencies=no
+After=var.mount
+Before=nix.mount
+RequiredBy=nix.mount
+ConditionPathExists=!/var/nix
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/cp -a /nix/. /var/nix/

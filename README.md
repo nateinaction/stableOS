@@ -8,6 +8,25 @@ stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:44`, providin
 
 ## Building Locally
 
+### Development environment
+
+The build, lint, and test toolchain (make, hadolint, container-structure-test,
+fish, pre-commit) is defined once in [`flake.nix`](flake.nix) — the same manifest
+CI uses, so local and CI stay in lockstep. You need [Nix](https://nixos.org)
+(with flakes) and [direnv](https://direnv.net); both ship in stableOS itself.
+
+Enter the dev shell one of two ways:
+
+```bash
+direnv allow      # auto-loads the shell on cd (via .envrc), or:
+nix develop       # enter it manually
+```
+
+`podman` is not part of the flake — it ships in the Fedora Atomic base OS and is
+preinstalled on CI runners. Override `PODMAN` if yours lives elsewhere.
+
+### Build
+
 Build the image with podman:
 
 ```bash
@@ -181,6 +200,7 @@ into the image) requires a valid signature for `ghcr.io/nateinaction/stableos`, 
 ## Repository Structure
 
 - `Containerfile` — Container image definition
+- `flake.nix` / `.envrc` — Nix dev-shell manifest for the build/lint/test toolchain (shared by local and CI)
 - `Makefile` — Local build, lint, test, and ISO targets
 - `.github/workflows/build.yml` — Build, test, sign, and publish the image to GHCR
 - `.github/workflows/iso.yml` — On-demand installer ISO build from a published image

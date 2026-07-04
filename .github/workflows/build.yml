@@ -11,11 +11,6 @@ permissions:
   contents: read
   packages: write
 
-# GitHub-hosted Linux runners ship podman preinstalled. Point the Makefile at
-# it instead of the local download, which is not supported on Linux.
-env:
-  PODMAN: podman
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -23,8 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
+      # Install Nix so the lint tools (hadolint, fish, pre-commit) resolve from
+      # the same flake.nix dev shell used locally -- one dependency manifest for
+      # local and CI. `nix develop -c` runs the target inside that shell.
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+
       - name: Run pre-commit hooks
-        run: make fmt
+        run: nix develop -c make fmt
 
   build:
     # Pin to 24.04: the rechunk step below runs rootful podman (podman mount),
@@ -34,6 +35,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      # container-structure-test comes from the flake.nix dev shell (same
+      # manifest as local); `podman build` below uses the runner's preinstalled
+      # podman directly.
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
 
       # Build with podman into containers-storage, matching local `make build`.
       # Always tag :latest so the structure tests have a stable ref to target;
@@ -56,7 +63,7 @@ jobs:
           podman system service --time=0 unix:///tmp/podman.sock &
           timeout 30 bash -c 'until [ -S /tmp/podman.sock ]; do sleep 0.5; done'
           export DOCKER_HOST=unix:///tmp/podman.sock
-          make test-container-structure
+          nix develop -c make test-container-structure
 
       # Everything below runs on main only: rechunk the freshly built image into
       # deterministic, package-boundary-aligned layers so bootc update deltas stay

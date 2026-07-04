@@ -38,8 +38,8 @@ fileExistenceTests:
   - name: 'nix-daemon mount-ordering drop-in exists'
     path: '/usr/lib/systemd/system/nix-daemon.service.d/10-nix-mount.conf'
     shouldExist: true
-  - name: 'nix store tmpfiles config exists'
-    path: '/usr/lib/tmpfiles.d/nix.conf'
+  - name: 'nix store-init oneshot exists'
+    path: '/usr/lib/systemd/system/nix-store-init.service'
     shouldExist: true
   - name: 'nix-direnv direnvrc exists'
     path: '/usr/share/nix-direnv/direnvrc'
