@@ -157,3 +157,7 @@ commandTests:
     command: 'grep'
     args: ['-q', '/etc/pki/containers/stableos.pub', '/etc/containers/policy.json']
     exitCode: 0
+  - name: 'firefox RPM is not installed'
+    command: 'rpm'
+    args: ['-q', 'firefox']
+    exitCode: 1
