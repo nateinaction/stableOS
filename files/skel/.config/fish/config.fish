@@ -17,3 +17,8 @@ end
 if type -q chezmoi
     chezmoi completion fish | source
 end
+
+# Initialize zoxide (directory jumper).
+if type -q zoxide
+    zoxide init fish | source
+end
