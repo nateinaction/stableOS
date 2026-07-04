@@ -79,6 +79,37 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password && \
     dnf5 clean all
 
+# Install Nix (multi-user) and direnv for per-project development environments.
+#
+# Nix gives per-project dev shells (`nix develop` against a flake.nix) without
+# rebuilding the image. Fedora 44 ships Nix natively; nix-daemon pulls in
+# nix-core and nix-filesystem for the multi-user daemon.
+#
+# The store must live at a real /nix (not a symlink) so the binary cache, whose
+# artifacts hard-code /nix/store paths, can substitute prebuilt toolchains. /nix
+# isn't writable on the immutable root, so nix.mount bind-mounts the persistent,
+# per-machine /var/nix onto /nix at boot; tmpfiles creates /var/nix. We create
+# /nix here as the bind-mount target and enable the daemon + mount.
+#
+# nix-direnv (not in Fedora repos) is a single shell file fetched at a pinned
+# version; its direnvrc lets a project `.envrc` with `use flake` auto-activate.
+# renovate: datasource=github-releases depName=nix-community/nix-direnv
+ARG NIX_DIRENV_VERSION=3.1.1
+RUN dnf5 install -y nix-core nix-daemon direnv && \
+    mkdir -p /nix /usr/share/nix-direnv && \
+    curl -fsSL -o /usr/share/nix-direnv/direnvrc \
+        "https://raw.githubusercontent.com/nix-community/nix-direnv/${NIX_DIRENV_VERSION}/direnvrc" && \
+    dnf5 clean all
+
+# Copy Nix daemon/store configuration and the bind-mount unit.
+COPY files/nix/nix.conf /etc/nix/nix.conf
+COPY files/systemd/nix.mount /usr/lib/systemd/system/
+COPY files/systemd/nix-daemon.service.d/ /usr/lib/systemd/system/nix-daemon.service.d/
+COPY files/tmpfiles.d/nix.conf /usr/lib/tmpfiles.d/nix.conf
+
+# Enable the Nix store bind mount and the socket-activated daemon.
+RUN systemctl enable nix.mount nix-daemon.socket
+
 # Install the Broadcom wl WiFi driver for MacBook hardware.
 #
 # broadcom-wl ships as an akmod (source module) that must be compiled against the

@@ -1,0 +1,3 @@
+# Load nix-direnv so a project `.envrc` containing `use flake` auto-activates and
+# caches its dev environment. The direnvrc is baked into the image at build time.
+source /usr/share/nix-direnv/direnvrc

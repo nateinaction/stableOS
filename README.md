@@ -32,7 +32,46 @@ stableOS includes a curated set of applications and tools baked into the image:
 - **Warp** — Modern Rust-based terminal with AI and collaboration features (launch from the app grid or run `warp-terminal`).
 - **Alacritty** — Fast, GPU-accelerated terminal emulator (launch from the app grid or run `alacritty`).
 - **1Password** — Password manager + browser extension (installed via the official 1Password RPM repo).
+- **Nix + direnv** — Multi-user Nix package manager for per-project development environments (see [Nix development environments](#nix-development-environments)).
 - **Flathub** — Preconfigured on first boot for easy Flatpak app installation via COSMIC Store.
+
+### Nix development environments
+
+stableOS ships a multi-user [Nix](https://nixos.org) so you can spin up reproducible,
+per-project toolchains (Go, Rust, etc.) with `nix develop` — no image rebuild required to
+add or change an environment.
+
+Because the immutable root can't host a writable `/nix`, the Nix store lives in `/var/nix`
+and is bind-mounted onto `/nix` at boot. `/var` is machine-local and **persists across image
+upgrades**, so downloaded toolchains stick around. Flakes and the modern `nix` CLI are
+enabled by default, and [direnv](https://direnv.net) + [nix-direnv](https://github.com/nix-community/nix-direnv)
+are wired into fish so a project `.envrc` auto-activates its environment on `cd`.
+
+Keep the manifests in your **dotfiles repo** (or per-project), not in this image. A minimal
+Rust example:
+
+```nix
+# flake.nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  outputs = { self, nixpkgs }:
+    let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    in {
+      devShells.x86_64-linux.default = pkgs.mkShell {
+        packages = [ pkgs.cargo pkgs.rustc pkgs.rust-analyzer ];
+      };
+    };
+}
+```
+
+```bash
+# .envrc  — then run `direnv allow` once
+use flake
+```
+
+Enter it manually with `nix develop`, or let direnv load it automatically when you `cd` into
+the project. Install user-wide tools with `nix profile install nixpkgs#<pkg>` (they land on
+`PATH` via `~/.nix-profile/bin`).
 
 ### Recommended Post-Install Apps
 
