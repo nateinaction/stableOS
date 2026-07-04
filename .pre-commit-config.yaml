@@ -23,7 +23,7 @@ repos:
   hooks:
     - id: lint-containerfile
       name: Lint Containerfile
-      entry: ./build/hadolint-v2.14.0
+      entry: hadolint
       language: system
       types: [dockerfile]
       args: ['--failure-threshold', 'warning']
