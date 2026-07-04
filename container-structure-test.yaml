@@ -23,7 +23,6 @@ fileExistenceTests:
   - name: 'cosign public key exists'
     path: '/etc/pki/containers/stableos.pub'
     shouldExist: true
-    contents: ['-----BEGIN PUBLIC KEY-----']
   - name: 'container signature policy exists'
     path: '/etc/containers/policy.json'
     shouldExist: true
@@ -52,6 +51,11 @@ fileExistenceTests:
   - name: 'nix bind-mount target directory exists'
     path: '/nix'
     shouldExist: true
+
+fileContentTests:
+  - name: 'cosign public key is a PEM public key'
+    path: '/etc/pki/containers/stableos.pub'
+    expectedContents: ['-----BEGIN PUBLIC KEY-----']
 
 commandTests:
   - name: 'tailscale is installed'
