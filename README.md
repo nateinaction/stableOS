@@ -126,17 +126,31 @@ If an update misbehaves, roll back to the previous deployment:
 sudo bootc rollback
 ```
 
+## Verifying the Image
+
+Published images are signed with [cosign](https://github.com/sigstore/cosign) using the
+key in `cosign.pub`. Verify a pulled image against it:
+
+```bash
+cosign verify --key cosign.pub ghcr.io/nateinaction/stableos:latest
+```
+
+Installed systems also enforce this automatically: `/etc/containers/policy.json` (baked
+into the image) requires a valid signature for `ghcr.io/nateinaction/stableos`, so
+`bootc upgrade` refuses any unsigned or mis-signed image.
+
 ## Repository Structure
 
 - `Containerfile` — Container image definition
 - `Makefile` — Local build, lint, test, and ISO targets
-- `.github/workflows/build.yml` — Build, test, and publish the image to GHCR
+- `.github/workflows/build.yml` — Build, test, sign, and publish the image to GHCR
 - `.github/workflows/iso.yml` — On-demand installer ISO build from a published image
 - `config.toml` — Optional bootc-image-builder configuration
 - `container-structure-test.yaml` — Image acceptance tests
+- `cosign.pub` — Public key used to verify image signatures
 - `.pre-commit-config.yaml` — Formatting and lint hooks
 - `renovate.json` — Automated dependency updates
-- `files/` — Files copied into the image (systemd units, `/etc/skel` defaults, module configs)
+- `files/` — Files copied into the image (systemd units, `/etc/skel` defaults, container signature policy, module configs)
 - `README.md` — This file
 - `.gitignore` — Git ignore rules
 
@@ -147,5 +161,4 @@ sudo bootc rollback
 
 ## Future Enhancements
 
-- Image signing with cosign/sigstore
 - Unattended installation via custom Anaconda kickstart

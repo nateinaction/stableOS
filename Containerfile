@@ -113,6 +113,14 @@ COPY files/systemd/flathub-setup.service /usr/lib/systemd/system/
 # Copy COSMIC skeleton defaults for new users.
 COPY files/skel/ /etc/skel/
 
+# Bake in the cosign public key and container signature policy so installed
+# systems verify this image's signature on every `bootc upgrade`. The policy
+# leaves the default permissive (base/flatpak/other pulls keep working) and
+# only *requires* a valid signature for ghcr.io/nateinaction/stableos.
+COPY cosign.pub /etc/pki/containers/stableos.pub
+COPY files/containers/policy.json /etc/containers/policy.json
+COPY files/containers/registries.d/ /etc/containers/registries.d/
+
 # Enable first-boot Flathub setup.
 RUN systemctl enable flathub-setup.service
 

@@ -20,6 +20,16 @@ fileExistenceTests:
   - name: 'applesmc module-load config exists'
     path: '/usr/lib/modules-load.d/applesmc.conf'
     shouldExist: true
+  - name: 'cosign public key exists'
+    path: '/etc/pki/containers/stableos.pub'
+    shouldExist: true
+    contents: ['-----BEGIN PUBLIC KEY-----']
+  - name: 'container signature policy exists'
+    path: '/etc/containers/policy.json'
+    shouldExist: true
+  - name: 'registries.d sigstore config exists'
+    path: '/etc/containers/registries.d/ghcr.yaml'
+    shouldExist: true
 
 commandTests:
   - name: 'tailscale is installed'
@@ -89,4 +99,12 @@ commandTests:
   - name: 'flathub-setup.service is enabled'
     command: 'systemctl'
     args: ['is-enabled', 'flathub-setup.service']
+    exitCode: 0
+  - name: 'signature policy requires signing for the stableos repo'
+    command: 'grep'
+    args: ['-q', 'ghcr.io/nateinaction/stableos', '/etc/containers/policy.json']
+    exitCode: 0
+  - name: 'signature policy points at the baked-in cosign key'
+    command: 'grep'
+    args: ['-q', '/etc/pki/containers/stableos.pub', '/etc/containers/policy.json']
     exitCode: 0

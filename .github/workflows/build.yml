@@ -109,8 +109,26 @@ jobs:
 
       - name: Push to GHCR
         if: github.ref == 'refs/heads/main'
+        id: push
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
         with:
           image: stableos
           tags: latest ${{ github.sha }}
           registry: ghcr.io/nateinaction
+
+      - name: Install cosign
+        if: github.ref == 'refs/heads/main'
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+
+      # Sign the pushed manifest by digest (not tag -- tags are mutable, and
+      # cosign requires by-digest refs). :latest and :<sha> share one manifest
+      # digest, so this single signature covers both. The baked-in policy.json
+      # verifies this signature against cosign.pub on every `bootc upgrade`.
+      - name: Sign image
+        if: github.ref == 'refs/heads/main'
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ""
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY \
+            ghcr.io/nateinaction/stableos@${{ steps.push.outputs.digest }}
