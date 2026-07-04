@@ -17,6 +17,11 @@ LABEL title="stableOS" \
 # https://github.com/bootc-dev/bootc/discussions/1038
 RUN rm -f /opt && mkdir -p /opt
 
+# Remove the Firefox RPM shipped by the base image. Firefox is installed as a
+# Flatpak (org.mozilla.firefox) instead — see README — so the base RPM is a
+# redundant, separately-updated duplicate.
+RUN dnf5 remove -y firefox firefox-langpacks && dnf5 clean all
+
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
     dnf5 install -y tailscale && \
