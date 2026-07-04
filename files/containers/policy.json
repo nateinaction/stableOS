@@ -1,0 +1,15 @@
+{
+  "default": [{ "type": "insecureAcceptAnything" }],
+  "transports": {
+    "docker": {
+      "ghcr.io/nateinaction/stableos": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/stableos.pub",
+          "signedIdentity": { "type": "matchRepository" }
+        }
+      ]
+    },
+    "docker-daemon": { "": [{ "type": "insecureAcceptAnything" }] }
+  }
+}

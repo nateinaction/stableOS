@@ -4,6 +4,10 @@ output/
 # Build artifacts and downloaded tools
 build/
 
+# cosign private signing key -- never commit; only cosign.pub is tracked
+cosign.key
+*.key
+
 # Editor and IDE cruft
 .vscode/
 .idea/

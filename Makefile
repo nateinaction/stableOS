@@ -45,15 +45,15 @@ output/bootiso/stableos.iso: build podman ## Build bootable ISO for installation
 	$(PODMAN) run --rm --privileged \
 		--platform $(PLATFORM) \
 		--security-opt label=type:unconfined_t \
-		--volume /var/lib/containers/storage:/var/lib/containers/storage
+		--volume /var/lib/containers/storage:/var/lib/containers/storage \
 		--volume ./output:/output \
 		--volume ./config.toml:/config.toml:ro \
 		quay.io/centos-bootc/bootc-image-builder:latest \
-		buils \
+		build \
 		--target-arch $(subst linux/,,$(PLATFORM)) \
-		--type iso
+		--type iso \
 		--rootfs btrfs \
-		--local $(IMAGE_NAME):$(IMAGE_TAG) \
+		--local $(IMAGE_NAME):$(IMAGE_TAG)
 
 .PHONY: iso
 iso: output/bootiso/stableos.iso ## Build bootable ISO for installation
