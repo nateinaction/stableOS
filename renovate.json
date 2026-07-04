@@ -4,6 +4,9 @@
     "config:recommended"
   ],
   "pinDigests": true,
+  "pre-commit": {
+    "enabled": true
+  },
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": false,
