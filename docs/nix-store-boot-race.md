@@ -195,8 +195,11 @@ also swept up unrelated `bootupd_t` denials — those are deliberately excluded.
 The image now bakes exactly this scoped module (`files/selinux/nix-daemon-socket.te`):
 
 ```
-allow init_t default_t:sock_file { create write };
+allow init_t default_t:sock_file { create write unlink };
 ```
+
+(For why `unlink` is in the rule, see "Third problem" below — it was added after
+a second-boot failure that the first-boot-only validation missed.)
 
 The `Containerfile` compiles and installs it at build time
 (`checkmodule` + `semodule_package` + `semodule -i`, with `checkpolicy` /
@@ -219,6 +222,79 @@ Tooling note: `audit2allow` is present on the running system, but
 
 ---
 
+# Third problem: the socket dies on the *second* boot (`unlink` denied)
+
+## Symptom
+
+The image with the `{ create write }` SELinux module was deployed and rebooted
+into. First-boot-style checks looked fine, but on this boot the socket was dead:
+
+```console
+$ systemctl is-active nix.mount nix-daemon.socket
+active
+failed
+$ getenforce
+Enforcing
+$ nix run nixpkgs#hello
+error: cannot connect to socket at '/nix/var/nix/daemon-socket/socket': Connection refused
+```
+
+"Connection refused" (not "no such file") is the tell: the socket *file* exists,
+but nothing is listening on it — the socket unit failed to bind.
+
+## Root cause: a persistent stale socket that SELinux won't let systemd remove
+
+The listening socket `/nix/var/nix/daemon-socket/socket` lives on the persistent
+`/var/nix` subvolume (`/nix` is a bind mount of it), and the stock
+`nix-daemon.socket` unit does **not** set `RemoveOnStop=`, so the socket file is
+left on disk when the unit stops. It therefore survives every reboot.
+
+On the next boot systemd must remove that leftover socket before it can rebind.
+That `unlink` is a *different* permission from the `create`/`write` the first
+module granted, and on a `default_t` sock_file it is denied:
+
+```
+avc: denied { unlink } comm="systemd"
+  scontext=system_u:system_r:init_t:s0
+  tcontext=system_u:object_r:default_t:s0
+  tclass=sock_file permissive=0
+```
+
+so the bind fails and the unit goes `failed`.
+
+**Why first-boot validation missed it:** on a fresh install the seeded store has
+no `daemon-socket/socket` yet, so the very first boot only ever *creates* the
+socket (`create`/`write`, both granted) and works. The `unlink` path is reached
+only once a socket file already exists — i.e. on the **second and every later
+boot**. Validating only the first boot hides the bug completely.
+
+The by-hand recovery that unblocked the running machine —
+`stop nix-daemon.service; rm -f …/socket; reset-failed; start nix-daemon.socket`
+— worked because the `rm` is done as root (unconfined), doing exactly the
+`unlink` systemd itself was denied.
+
+## The fix (in this repo)
+
+Add `unlink` to the module (`files/selinux/nix-daemon-socket.te`):
+
+```
+allow init_t default_t:sock_file { create write unlink };
+```
+
+Derived from the observed `unlink` AVC, in the same scoped-to-observed-denials
+style as the original rule. No `getattr`/`setattr` denials appeared, so none are
+granted. This is the minimal fix that keeps the store-on-`/var` design working;
+the label-based alternative (relabel the daemon-socket dir) remains the longer-
+term option if upstream Nix SELinux policy lands.
+
+> **Validation must include a reboot.** The build sandbox cannot test this at
+> all, and a single first boot is *not* sufficient — the regression only appears
+> on the second boot. Deploy, boot, then reboot again, and confirm
+> `nix-daemon.socket` is `active` and `nix run nixpkgs#hello` works **after the
+> reboot**.
+
+---
+
 # Resume checklist (after reboot / new session)
 
 The running machine was unblocked by hand (store seeded, SELinux module loaded);
@@ -234,7 +310,8 @@ nix run nixpkgs#hello                             # want: ¡Hola mundo! / Hello,
 ```
 
 If `nix.mount` is not active: `sudo systemctl start nix.mount`.
-If `nix-daemon.socket` failed (stale socket from a previous daemon):
+If `nix-daemon.socket` failed (stale socket from a previous boot — the "Third
+problem" above; expected on any image whose SELinux module lacks `unlink`):
 
 ```sh
 sudo systemctl stop nix-daemon.service
@@ -242,6 +319,10 @@ sudo rm -f /nix/var/nix/daemon-socket/socket
 sudo systemctl reset-failed nix-daemon.socket
 sudo systemctl start nix-daemon.socket
 ```
+
+This is a hand-`unlink` workaround. The durable fix is the `unlink` rule now in
+the SELinux module (`files/selinux/nix-daemon-socket.te`). Once an image carrying
+it is deployed, the socket comes back up on its own after a reboot.
 
 **2. The hand-loaded `nix-local` module is broader than needed** (it included
 `bootupd_t` noise). Once the rebuilt image's `nix-daemon-socket` module is in
@@ -259,7 +340,9 @@ make build                        # or: podman build -f ./Containerfile -t stabl
 make test-container-structure     # asserts the units + SELinux module are present
 ```
 
-Then deploy and reboot into it, and verify **first boot needs no manual steps**:
+Then deploy and reboot into it, and verify **neither the first nor a subsequent
+boot needs manual steps** (the `unlink` regression only shows on the second
+boot, so a single reboot is not enough):
 
 ```sh
 sudo bootc upgrade                # once the image is published, or switch to a local build
@@ -267,6 +350,11 @@ sudo reboot
 # after login, with NO manual intervention:
 systemctl is-active nix.mount nix-daemon.socket   # want: active active
 nix run nixpkgs#hello
+
+sudo reboot                       # reboot AGAIN — this is the one that used to fail
+# after login, still with NO manual intervention:
+systemctl is-active nix.mount nix-daemon.socket   # want: active active
+nix run nixpkgs#hello             # want: works under enforcing, no stale-socket fix
 ```
 
 **4. Open outstanding items:**
