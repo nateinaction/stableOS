@@ -12,7 +12,7 @@ This toolchain has to run in two places — a contributor's machine and CI — a
 they must stay in lockstep, or "works on my machine" / "passes locally, fails in
 CI" drift creeps in.
 
-The host is an immutable Fedora Atomic system ([ADR 0001](0001-immutable-image-mode-base.md)),
+The host is an immutable Fedora Atomic system ([ADR 0001](0001-immutable-operating-system.md)),
 where layering build tools into the base OS is discouraged, so the toolchain
 should not be installed system-wide. It also should not be baked into the
 stableOS image itself — build tooling is not something end users need.
@@ -41,7 +41,7 @@ auto-activates it via direnv on `cd`; CI installs Nix and runs targets with
 byte-identical tool versions.
 
 This is the **same Nix** the OS offers to end users for dev environments
-([ADR 0003](0003-software-delivery-tiers.md)) — here applied to stableOS's own
+([ADR 0007](0007-software-delivery-tiers.md)) — here applied to stableOS's own
 build tooling. Compared to the `build/`-download approach it removes all the
 bespoke per-tool fetch/pin/extract logic: adding a tool is one line in
 `flake.nix`, versions are pinned centrally in `flake.lock`, and multi-platform

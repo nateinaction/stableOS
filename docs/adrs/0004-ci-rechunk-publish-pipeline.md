@@ -36,7 +36,7 @@ Because rechunk rewrites the image and strips its config, two things are
 re-applied afterward: the `Containerfile` LABELs (title/description/source) and a
 `YYMMDD` version stamp. The rechunked image — not the original `podman build`
 output — is what gets pushed to GHCR and then signed
-([ADR 0006](0006-cosign-image-signing.md)).
+([ADR 0003](0003-cosign-image-signing.md)).
 
 Publishing the raw build was rejected because it produces the unstable, oversized
 deltas described above; hand-tuning layer order was rejected as fragile busywork

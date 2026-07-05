@@ -1,4 +1,4 @@
-# Build on an immutable, image-mode (bootc) base
+# Build on an immutable operating system
 
 - Status: accepted
 - Date: 2026-07-04

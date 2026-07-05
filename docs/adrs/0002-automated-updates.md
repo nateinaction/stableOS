@@ -40,10 +40,10 @@ Chosen: **Renovate** (`renovate.json`), extending `config:recommended` with:
   is restricted to `allowedVersions: "<=44"` so Renovate only proposes the base
   bump once the next Fedora reaches general availability; the cap is raised by
   hand when a new Fedora GAs (~April/October). See
-  [ADR 0002](0002-cosmic-desktop-environment.md).
+  [ADR 0006](0006-desktop-environment.md).
 
 CI gates every Renovate PR (lint + build + structure tests, see
-[ADR 0007](0007-ci-rechunk-publish-pipeline.md)), so automerge only lands changes
+[ADR 0004](0004-ci-rechunk-publish-pipeline.md)), so automerge only lands changes
 that pass the same checks as any other PR.
 
 ### Consequences

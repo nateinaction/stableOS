@@ -6,7 +6,7 @@
 
 ## Context and Problem Statement
 
-On an immutable image-mode OS ([ADR 0001](0001-immutable-image-mode-base.md)),
+On an immutable image-mode OS ([ADR 0001](0001-immutable-operating-system.md)),
 there is no single obvious place to install software. Baking everything into the
 image maximizes reproducibility but makes every change require an image rebuild
 and reboot, bloats the base, and gives GUI apps more privilege than they need.
