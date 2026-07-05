@@ -1,8 +1,9 @@
-# Use a Nix flake as the single build/lint/test toolchain
+# Single build toolchain
 
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principle: [One Way to Do Things](../ARCHITECTURE.md#7-one-way-to-do-things)
 
 ## Context and Problem Statement
 

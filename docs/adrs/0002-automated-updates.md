@@ -1,8 +1,9 @@
-# Automate dependency updates with Renovate
+# Automated updates
 
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principle: [Continuous, Automated Updates](../ARCHITECTURE.md#6-continuous-automated-updates)
 
 ## Context and Problem Statement
 

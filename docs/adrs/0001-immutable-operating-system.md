@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principles: [Immutability and Reliability](../ARCHITECTURE.md#1-immutability-and-reliability), [Portability and Reproducibility](../ARCHITECTURE.md#2-portability-and-reproducibility)
 
 ## Context and Problem Statement
 

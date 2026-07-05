@@ -1,8 +1,9 @@
-# Deliver software in tiers: RPM, Flatpak, Nix
+# Layered software delivery
 
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principles: [Layered Software Delivery](../ARCHITECTURE.md#4-layered-software-delivery), [User State Is Declared by Users, Not the Build](../ARCHITECTURE.md#8-user-state-is-declared-by-users-not-the-build)
 
 ## Context and Problem Statement
 

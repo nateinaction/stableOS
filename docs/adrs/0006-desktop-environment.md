@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principle: [Prefer Memory-Safe Tooling](../ARCHITECTURE.md#3-prefer-memory-safe-tooling)
 
 ## Context and Problem Statement
 

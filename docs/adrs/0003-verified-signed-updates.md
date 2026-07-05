@@ -1,8 +1,9 @@
-# Sign images with cosign and enforce on upgrade
+# Verified, signed updates
 
 - Status: accepted
 - Date: 2026-07-04
 - Deciders: nateinaction
+- Guiding principle: [Verified, Signed Updates](../ARCHITECTURE.md#5-verified-signed-updates)
 
 ## Context and Problem Statement
 
