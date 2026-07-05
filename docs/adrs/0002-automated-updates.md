@@ -39,12 +39,10 @@ Chosen: **Renovate** (`renovate.json`), extending `config:recommended` with:
 - **Base image capped at GA Fedora** — `quay.io/fedora-ostree-desktops/cosmic-atomic`
   is restricted to `allowedVersions: "<=44"` so Renovate only proposes the base
   bump once the next Fedora reaches general availability; the cap is raised by
-  hand when a new Fedora GAs (~April/October). See
-  [ADR 0006](0006-desktop-environment.md).
+  hand when a new Fedora GAs (~April/October).
 
-CI gates every Renovate PR (lint + build + structure tests, see
-[ADR 0004](0004-ci-rechunk-publish-pipeline.md)), so automerge only lands changes
-that pass the same checks as any other PR.
+CI gates every Renovate PR (lint + build + structure tests), so automerge only
+lands changes that pass the same checks as any other PR.
 
 ### Consequences
 

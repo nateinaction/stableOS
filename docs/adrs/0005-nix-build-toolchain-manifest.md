@@ -40,9 +40,7 @@ auto-activates it via direnv on `cd`; CI installs Nix and runs targets with
 `nix develop -c make …`. `flake.lock` pins nixpkgs so local and CI resolve
 byte-identical tool versions.
 
-This is the **same Nix** the OS offers to end users for dev environments
-([ADR 0007](0007-software-delivery-tiers.md)) — here applied to stableOS's own
-build tooling. Compared to the `build/`-download approach it removes all the
+Compared to the `build/`-download approach this removes all the
 bespoke per-tool fetch/pin/extract logic: adding a tool is one line in
 `flake.nix`, versions are pinned centrally in `flake.lock`, and multi-platform
 resolution is handled by nixpkgs. It keeps the immutable base OS clean (nothing
