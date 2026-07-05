@@ -1,6 +1,10 @@
-Which items remain guidelines, which remain ADRs.
-Every guideline should have at least one related ADR.
-Guidelines should not mention solutions or specific applications.
+Architectural Guidelines should not mention solutions, ADRs or applications.
+Add guiding principle: only one way to do things: don't ship 2 applications that perform the same functions, pick one.
+Add a guideline that states every guideline should have at least one related ADR.
+
+Which items should remain guidelines, which remain ADRs?
+
+Other ADRs
 - [ ] Separate out 1Password decision from 004 software tiers, need password manager ADR since password managers have become OS standard
 - [ ] Separate ADR on terminal emulator choice: warp vs alacrity, warp chosen for rust, next command prediction
 - [ ] Separate ADR on chezmoi
