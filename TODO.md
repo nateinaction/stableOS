@@ -1,7 +1,3 @@
-Architectural Guidelines should not mention solutions, ADRs or applications.
-Add guiding principle: only one way to do things: don't ship 2 applications that perform the same functions, pick one.
-Add a guideline that states every guideline should have at least one related ADR.
-
 Which items should remain guidelines, which remain ADRs?
 
 Other ADRs
@@ -12,7 +8,3 @@ Other ADRs
 - [ ] Separate ADR on zoxide: other options rupa/z, a fish native z, oh-my-fish z integration
 - [ ] ADR on handling statefull information in home dir? Backup solution?
 - [ ] ADR on tailscale choice?
-
-Add system-wide utilities must be accompanied by an ADR.
-
-Should ADRs be permanent cluttering up the ADR dir or should we use git history instead?

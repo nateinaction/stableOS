@@ -8,6 +8,8 @@ stableOS is a personal daily-driver operating system built with **bootc** (boota
 
 These are principle-level statements. They describe *what* stableOS values and *why*, not the specific mechanisms that implement them — those belong in ADRs (see [`docs/adrs/`](docs/adrs/)).
 
+Every guiding principle should have at least one related ADR that records a concrete decision applying it. A principle with no supporting ADR is aspirational rather than established, and should be treated as a candidate for either grounding in a real decision or removal.
+
 ### 1. Immutability and Reliability
 
 The root filesystem is read-only; all OS state is defined declaratively. This ensures:
@@ -40,6 +42,8 @@ Software is delivered in tiers, each with appropriate constraints and distributi
 2. **Sandboxed software** — user-facing programs, prioritized for security isolation and ease of update.
 3. **Developer environments** — per-project toolchains, kept separate from the system image.
 
+Adding a system-wide utility to the image must be accompanied by an ADR recording the decision and its rationale.
+
 ### 5. Verified, Signed Updates
 
 All published releases must be cryptographically signed and verification must be automatic and enforced:
@@ -60,9 +64,13 @@ The OS should pull new versions automatically and stage them for the next reboot
 
 Provide a single, canonical way to accomplish any given task. Do not ship two things that perform the same function — pick one and commit to it. A single well-supported path is easier to document, secure, and maintain. Redundant options create decision fatigue, drift, and duplicated maintenance for no real benefit.
 
-### 8. Every Principle Is Backed by a Decision
+### 8. User State Is Declared by Users, Not the Build
 
-Every guiding principle should have at least one related ADR that records a concrete decision applying it. A principle with no supporting ADR is aspirational rather than established, and should be treated as a candidate for either grounding in a real decision or removal.
+The build defines the OS, not the person using it. User state — dotfiles, application settings, personal configuration — must not be baked into the system image. Instead, users are given tools to **declare their own state** and reproduce it on top of any stableOS install:
+
+- The build stays generic and identical for everyone; personalization lives outside it.
+- User state is expressed declaratively so it can be version-controlled, audited, and reapplied on a fresh machine.
+- Separating user state from the system image keeps upgrades clean and avoids coupling a person's preferences to the OS release cycle.
 
 ## Decision-Making Workflow
 
