@@ -68,9 +68,9 @@ commandTests:
     command: 'command'
     args: ['-v', 'fish']
     exitCode: 0
-  - name: 'vim is installed'
+  - name: 'helix is installed'
     command: 'command'
-    args: ['-v', 'vim']
+    args: ['-v', 'hx']
     exitCode: 0
   - name: 'chezmoi is installed'
     command: 'command'
@@ -83,10 +83,6 @@ commandTests:
   - name: 'zoxide is installed'
     command: 'command'
     args: ['-v', 'zoxide']
-    exitCode: 0
-  - name: 'alacritty is installed'
-    command: 'command'
-    args: ['-v', 'alacritty']
     exitCode: 0
   - name: 'warp-terminal is installed'
     command: 'command'
