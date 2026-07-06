@@ -28,14 +28,11 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
     systemctl enable tailscaled.service && \
     dnf5 clean all
 
-# Install vim.
-RUN dnf5 install -y vim && dnf5 clean all
+# Install helix.
+RUN dnf5 install -y helix && dnf5 clean all
 
 # Install zoxide (directory jumper) and fzf (fuzzy finder).
 RUN dnf5 install -y zoxide fzf && dnf5 clean all
-
-# Install Alacritty terminal.
-RUN dnf5 install -y alacritty && dnf5 clean all
 
 # Install Fish shell and set it as the default shell for new users.
 RUN dnf5 install -y fish && \
