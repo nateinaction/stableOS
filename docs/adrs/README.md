@@ -22,3 +22,4 @@ rather than editing history.
 | [0013](0013-private-mesh-networking.md) | Use Tailscale for private mesh networking | Accepted |
 | [0014](0014-default-editor.md) | Use Helix as the default editor | Accepted |
 | [0015](0015-password-management.md) | Password management | Accepted |
+| [0016](0016-nix-store-on-immutable-host.md) | Hosting the Nix store on an immutable host | Accepted |
