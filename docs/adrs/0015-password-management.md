@@ -48,7 +48,8 @@ treats the password manager like any other user-level GUI app.
 **1Password clipboard bug:** The 1Password Flatpak does not propagate clipboard
 writes correctly. Until that is resolved upstream, users who choose 1Password should
 install it as an image RPM rather than via Flatpak. Once fixed, move the install to
-Flatpak and remove the RPM from the Containerfile.
+Flatpak and remove the RPM from the Containerfile. Tracked in
+[issue #31](https://github.com/nateinaction/stableOS/issues/31).
 
 ### Revisit Triggers
 
