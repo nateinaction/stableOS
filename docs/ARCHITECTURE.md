@@ -2,11 +2,11 @@
 
 ## Overview
 
-stableOS is a personal daily-driver operating system built with **bootc** (bootable container) on Fedora Atomic, featuring the COSMIC desktop. This document captures the guiding principles that shape architecture and design decisions. These principles are mutable and can evolve; for immutable records of *specific decisions and their rationale*, see [`docs/adrs/`](docs/adrs/).
+stableOS is a personal daily-driver operating system built with **bootc** (bootable container) on Fedora Atomic, featuring the COSMIC desktop. This document captures the guiding principles that shape architecture and design decisions. These principles are mutable and can evolve; for immutable records of *specific decisions and their rationale*, see [`docs/adrs/`](adrs/).
 
 ## Guiding Principles
 
-These are principle-level statements. They describe *what* stableOS values and *why*, not the specific mechanisms that implement them — those belong in ADRs (see [`docs/adrs/`](docs/adrs/)).
+These are principle-level statements. They describe *what* stableOS values and *why*, not the specific mechanisms that implement them — those belong in ADRs (see [`docs/adrs/`](adrs/)).
 
 Every guiding principle should have at least one related ADR that records a concrete decision applying it. A principle with no supporting ADR is aspirational rather than established, and should be treated as a candidate for either grounding in a real decision or removal.
 
@@ -75,7 +75,7 @@ The build defines the OS, not the person using it. User state — dotfiles, appl
 ## Decision-Making Workflow
 
 1. **Small decisions, tactical questions:** Settled inline in code. Update this file if a new principle emerges.
-2. **Significant architectural decisions:** Propose an ADR (see [`docs/adrs/`](docs/adrs/)) so the rationale is recorded and future contributors understand the context.
+2. **Significant architectural decisions:** Propose an ADR (see [`docs/adrs/`](adrs/)) so the rationale is recorded and future contributors understand the context.
 3. **Principle changes or clarifications:** Update this file and propose via PR for discussion.
 
-See [`docs/adrs/README.md`](docs/adrs/README.md) for the ADR process and existing decisions.
+See [`docs/adrs/README.md`](adrs/README.md) for the ADR process and existing decisions.

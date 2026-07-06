@@ -50,7 +50,7 @@ Originally `/var/nix` was created by a tmpfiles rule (`d /var/nix`, processed by
 So on first boot the condition is checked before the directory exists. Evidence
 from a first-boot journal:
 
-```
+```text
 00:24:13  systemd-tmpfiles-setup.service runs (does not create /var/nix yet)
 00:24:28  nix.mount SKIPPED — ConditionPathExists=/var/nix unmet   ← the bug
 00:24:29  systemd-tmpfiles-setup.service runs again; /var/nix finally created,
@@ -113,9 +113,9 @@ nix --version                          # should work now
 
 ---
 
-# Second problem: SELinux blocks the daemon socket
+## Second problem: SELinux blocks the daemon socket
 
-## Symptom
+### Symptom
 
 After the store is mounted and seeded (boot-race fixed), starting the daemon
 socket still fails:
@@ -132,11 +132,11 @@ $ systemctl status nix-daemon.socket
 
 Permission denied *as root* is the tell: it is SELinux, not Unix permissions.
 
-## Root cause: the store lives on `/var`, so `/nix` is labeled `default_t`
+### Root cause: the store lives on `/var`, so `/nix` is labeled `default_t`
 
 The audit record is unambiguous:
 
-```
+```text
 avc: denied { create } comm="systemd" name="socket"
   scontext=system_u:system_r:init_t:s0
   tcontext=system_u:object_r:default_t:s0
@@ -165,7 +165,7 @@ cannot be created under enforcing SELinux, so Nix stays unusable.
 This gap was never addressed: the "store on `/var`, bind-mounted onto `/nix`"
 design was not reconciled with SELinux.
 
-## In-place unblock (needs root)
+### In-place unblock (needs root)
 
 Confirm SELinux is the only remaining blocker, capture every denial Nix
 produces, turn them into a local policy module, and return to enforcing:
@@ -186,7 +186,7 @@ sudo systemctl restart nix-daemon.socket
 nix run nixpkgs#hello                       # Hello, world! under enforcing
 ```
 
-## Durable fix (implemented in the image)
+### Durable fix (implemented in the image)
 
 Confirmed working: with just the one reviewed rule loaded, `nix run
 nixpkgs#hello` succeeds under **enforcing** SELinux. The `audit2allow` capture
@@ -194,7 +194,7 @@ also swept up unrelated `bootupd_t` denials — those are deliberately excluded.
 
 The image now bakes exactly this scoped module (`files/selinux/nix-daemon-socket.te`):
 
-```
+```text
 allow init_t default_t:sock_file { create write unlink };
 ```
 
@@ -222,9 +222,9 @@ Tooling note: `audit2allow` is present on the running system, but
 
 ---
 
-# Third problem: the socket dies on the *second* boot (`unlink` denied)
+## Third problem: the socket dies on the *second* boot (`unlink` denied)
 
-## Symptom
+### Symptom
 
 The image with the `{ create write }` SELinux module was deployed and rebooted
 into. First-boot-style checks looked fine, but on this boot the socket was dead:
@@ -242,7 +242,7 @@ error: cannot connect to socket at '/nix/var/nix/daemon-socket/socket': Connecti
 "Connection refused" (not "no such file") is the tell: the socket *file* exists,
 but nothing is listening on it — the socket unit failed to bind.
 
-## Root cause: a persistent stale socket that SELinux won't let systemd remove
+### Root cause: a persistent stale socket that SELinux won't let systemd remove
 
 The listening socket `/nix/var/nix/daemon-socket/socket` lives on the persistent
 `/var/nix` subvolume (`/nix` is a bind mount of it), and the stock
@@ -253,7 +253,7 @@ On the next boot systemd must remove that leftover socket before it can rebind.
 That `unlink` is a *different* permission from the `create`/`write` the first
 module granted, and on a `default_t` sock_file it is denied:
 
-```
+```text
 avc: denied { unlink } comm="systemd"
   scontext=system_u:system_r:init_t:s0
   tcontext=system_u:object_r:default_t:s0
@@ -273,11 +273,11 @@ The by-hand recovery that unblocked the running machine —
 — worked because the `rm` is done as root (unconfined), doing exactly the
 `unlink` systemd itself was denied.
 
-## The fix (in this repo)
+### The fix (in this repo)
 
 Add `unlink` to the module (`files/selinux/nix-daemon-socket.te`):
 
-```
+```text
 allow init_t default_t:sock_file { create write unlink };
 ```
 
@@ -295,7 +295,7 @@ term option if upstream Nix SELinux policy lands.
 
 ---
 
-# Resume checklist (after reboot / new session)
+## Resume checklist (after reboot / new session)
 
 The running machine was unblocked by hand (store seeded, SELinux module loaded);
 those changes persist on `/var` and in the policy store. The repo changes are
@@ -358,6 +358,7 @@ nix run nixpkgs#hello             # want: works under enforcing, no stale-socket
 ```
 
 **4. Open outstanding items:**
+
 - The SELinux + boot-race image fixes are committed on branch `nix-lock-2` (atop
   the merged `nix-single-manifest` work and the committed `flake.lock`); push it
   and open a PR.

@@ -1,0 +1,8 @@
+# rumdl configuration — https://github.com/rvben/rumdl
+
+[global]
+# Prose is wrapped by hand at varying widths; don't enforce a line length.
+disable = ["MD013"]
+
+# Local Claude worktrees are not part of the tracked docs.
+exclude = [".claude"]

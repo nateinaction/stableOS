@@ -30,7 +30,7 @@ How should image authenticity be established and enforced?
 Chosen: **cosign signing with a fixed key pair, enforced on every machine**.
 
 - CI signs the pushed manifest **by digest** after publishing (the private key is
-  a CI secret, `SIGNING_SECRET`). :latest and :<sha> share one manifest digest,
+  a CI secret, `SIGNING_SECRET`). `:latest` and `:<sha>` share one manifest digest,
   so a single signature covers both.
 - The public key (`cosign.pub`) is **baked into the image** at
   `/etc/pki/containers/stableos.pub`, and a containers-image policy
