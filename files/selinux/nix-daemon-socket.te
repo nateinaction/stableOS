@@ -7,7 +7,7 @@
 # (init_t) must create the listening socket at /nix/var/nix/daemon-socket/socket.
 # Under enforcing SELinux init_t may not create a sock_file in a default_t
 # directory, so the socket unit fails with "Permission denied" and Nix is
-# unusable. See docs/nix-store-boot-race.md.
+# unusable. See docs/adrs/0016-nix-store-on-immutable-host.md.
 #
 # `unlink` is also required: the socket lives on the persistent /var/nix
 # subvolume (bind-mounted onto /nix), so the socket file survives reboots

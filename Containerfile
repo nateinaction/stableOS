@@ -94,7 +94,7 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
 # artifacts hard-code /nix/store paths, can substitute prebuilt toolchains. /nix
 # isn't writable on the immutable root, so nix.mount bind-mounts the persistent,
 # per-machine /var/nix onto /nix at boot; nix-store-init.service seeds /var/nix
-# from the image skeleton before the mount (see docs/nix-store-boot-race.md). We
+# from the image skeleton before the mount (see docs/adrs/0016-nix-store-on-immutable-host.md). We
 # create /nix here as the bind-mount target and enable the daemon + mount.
 #
 # nix-direnv (not in Fedora repos) is a single shell file fetched at a pinned
@@ -118,7 +118,7 @@ COPY files/systemd/nix-daemon.service.d/ /usr/lib/systemd/system/nix-daemon.serv
 # it the socket unit fails "Permission denied" under enforcing and Nix is
 # unusable. checkpolicy/policycoreutils-devel provide checkmodule and
 # semodule_package; they are build-only, so install, compile, and remove them in
-# one layer. See docs/nix-store-boot-race.md.
+# one layer. See docs/adrs/0016-nix-store-on-immutable-host.md.
 COPY files/selinux/nix-daemon-socket.te /tmp/nix-daemon-socket.te
 RUN dnf5 install -y checkpolicy policycoreutils-devel && \
     checkmodule -M -m -o /tmp/nix-daemon-socket.mod /tmp/nix-daemon-socket.te && \

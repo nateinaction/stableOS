@@ -12,7 +12,7 @@
 # ordering after it fixes the first-boot race that the old
 # ConditionPathExists=/var/nix guard caused: /var/nix did not yet exist when the
 # mount was evaluated, so it was silently skipped and never retried. See
-# docs/nix-store-boot-race.md.
+# docs/adrs/0016-nix-store-on-immutable-host.md.
 [Unit]
 Description=Bind mount /var/nix onto /nix
 Before=nix-daemon.service nix-daemon.socket
