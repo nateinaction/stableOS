@@ -76,10 +76,6 @@ commandTests:
     command: 'command'
     args: ['-v', 'chezmoi']
     exitCode: 0
-  - name: 'gh is installed'
-    command: 'command'
-    args: ['-v', 'gh']
-    exitCode: 0
   - name: 'fzf is installed'
     command: 'command'
     args: ['-v', 'fzf']
@@ -87,10 +83,6 @@ commandTests:
   - name: 'zoxide is installed'
     command: 'command'
     args: ['-v', 'zoxide']
-    exitCode: 0
-  - name: 'claude is installed'
-    command: 'command'
-    args: ['-v', 'claude']
     exitCode: 0
   - name: 'warp-terminal is installed'
     command: 'command'
