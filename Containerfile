@@ -52,23 +52,6 @@ RUN dnf5 install -y fish && \
 # Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
 
-# Add GitHub CLI repo and install gh.
-# Ref: https://github.com/nateinaction/stableOS/issues/41
-RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
-    dnf5 install -y gh && \
-    dnf5 clean all
-
-# Add Claude Code repo and install claude-code.
-# Ref: https://github.com/nateinaction/stableOS/issues/40
-RUN dnf5 -y config-manager addrepo \
-        --id=claude-code \
-        --set=name="Claude Code" \
-        --set=baseurl=https://downloads.claude.ai/claude-code/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://downloads.claude.ai/keys/claude-code.asc && \
-    dnf5 install -y claude-code && \
-    dnf5 clean all
-
 # Add Warp terminal repo and install warp-terminal.
 # Ref: ADR-0009 (terminal-emulator)
 RUN dnf5 -y config-manager addrepo \
