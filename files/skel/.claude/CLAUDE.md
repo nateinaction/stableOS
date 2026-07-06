@@ -11,7 +11,7 @@ For each repository:
 - Add a **`flake.nix`** defining the project's dev environment (`devShells.default`) with all needed tools and dependencies.
 - Add an **`.envrc`** file so that **direnv** automatically loads the environment on `cd` into the repo. Typically:
 
-  ```
+  ```text
   use flake
   ```
 
