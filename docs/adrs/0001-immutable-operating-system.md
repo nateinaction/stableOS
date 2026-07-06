@@ -96,5 +96,4 @@ writable state lives on `/var` (persisted across upgrades) and per-user state in
 - Bad: some software assumes a writable `/` or `/opt` and needs adaptation to the
   image model (documented inline in the `Containerfile`), and writable state must
   be consciously routed to `/var` — subsystems that expect to write under `/`
-  (e.g. the Nix store) need explicit handling, see
-  [`docs/nix-store-boot-race.md`](../nix-store-boot-race.md).
+  (e.g. the Nix store) need explicit handling.

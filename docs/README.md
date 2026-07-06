@@ -11,7 +11,7 @@ stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:44`, providin
 ### Development environment
 
 The build, lint, and test toolchain (make, hadolint, container-structure-test,
-fish, pre-commit) is defined once in [`flake.nix`](flake.nix) — the same manifest
+fish, pre-commit) is defined once in [`flake.nix`](../flake.nix) — the same manifest
 CI uses, so local and CI stay in lockstep. You need [Nix](https://nixos.org)
 (with flakes) and [direnv](https://direnv.net); both ship in stableOS itself.
 

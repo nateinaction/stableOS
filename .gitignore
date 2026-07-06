@@ -16,6 +16,9 @@ result-*
 cosign.key
 *.key
 
+# rumdl lint cache
+.rumdl_cache/
+
 # Editor and IDE cruft
 .vscode/
 .idea/
