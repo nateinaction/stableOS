@@ -11,7 +11,7 @@ stableOS is built on `quay.io/fedora-ostree-desktops/cosmic-atomic:44`, providin
 ### Development environment
 
 The build, lint, and test toolchain (make, hadolint, container-structure-test,
-fish, pre-commit) is defined once in [`flake.nix`](flake.nix) — the same manifest
+fish, pre-commit) is defined once in [`flake.nix`](../flake.nix) — the same manifest
 CI uses, so local and CI stay in lockstep. You need [Nix](https://nixos.org)
 (with flakes) and [direnv](https://direnv.net); both ship in stableOS itself.
 
@@ -101,29 +101,35 @@ Install these via Flatpak (COSMIC Store or `flatpak install`) after first boot:
 ### Post-Install Setup
 
 1. **Install apps via COSMIC Store or Flatpak CLI:** On first boot, Flathub is configured. Use COSMIC Store to browse and install, or install from the terminal:
+
    ```bash
    flatpak install flathub org.mozilla.firefox
    ```
 
 2. **Tailscale:** After starting Tailscale, authenticate with your account:
+
    ```bash
    sudo tailscale up
    ```
 
 3. **Dotfiles:** Set up your personal shell config, aliases, and desktop settings with chezmoi:
+
    ```bash
    chezmoi init --apply nateinaction  # pulls github.com/nateinaction/dotfiles
    ```
+
    Keep your dotfiles in a **separate repository** from stableOS; the image handles global defaults, while your dotfiles repo handles per-user customization.
 
 ### Automatic Updates
 
 stableOS pulls new images weekly and stages them for the next reboot. Check status with:
+
 ```bash
 systemctl status bootc-fetch-apply-updates.timer
 ```
 
 To disable automatic updates:
+
 ```bash
 systemctl disable bootc-fetch-apply-updates.timer
 ```
@@ -133,9 +139,11 @@ systemctl disable bootc-fetch-apply-updates.timer
 ### On Bare Metal
 
 1. Flash the ISO to a USB drive:
+
    ```bash
    dd if=output/bootiso/stableos.iso of=/dev/sdX bs=4M status=progress
    ```
+
    (Replace `/dev/sdX` with your USB device.)
 
 2. Boot the target machine from the USB drive.

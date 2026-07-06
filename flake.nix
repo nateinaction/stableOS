@@ -28,7 +28,12 @@
           ];
 
           shellHook = ''
-            echo "stableOS dev shell — make, hadolint, container-structure-test, fish, pre-commit"
+            # Idempotently install the git hooks on shell entry so every clone
+            # and worktree (activated via direnv) commits through pre-commit —
+            # otherwise lint that only CI's --all-files run catches slips through.
+            if [ -d .git ] || git rev-parse --git-dir >/dev/null 2>&1; then
+              pre-commit install --install-hooks >/dev/null 2>&1 || true
+            fi
           '';
         };
       }
