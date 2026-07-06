@@ -1,11 +1,10 @@
 Which items should remain guidelines, which remain ADRs?
 
-Other ADRs
-- [ ] Separate ADR on terminal emulator choice: warp vs alacrity, warp chosen for rust, next command prediction
-- [ ] Separate ADR on directory navigatoin: zoxide (chosen), rupa/z, a fish native z, oh-my-fish's z wrapper
-- [ ] Separate ADR on declarative user state: chezmoi (chosen), nix (chosen)
-- [ ] Separate ADR on fuzzy finding: fzf (chosen), skim-rs
+- [ ] ADR for fish shell
 
 Other ADRs (still baking)
-- [ ] Separate out 1Password decision from 004 software tiers, need password manager ADR since password managers have become OS standard
+- [ ] Separate out 1Password decision from software tiers ADR
+    - Password management should likely be left up-to the user but there is an issue with copying values in the flatpack version of 1Password.
 - [ ] ADR on tailscale choice?
+- [ ] Choose a default editor? vim? helix? Helix for speed/memory safety?
+- [ ] Should i reconsider Warp selection?

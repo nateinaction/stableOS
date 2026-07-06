@@ -14,3 +14,7 @@ rather than editing history.
 | [0005](0005-single-build-toolchain.md) | Single build toolchain | Accepted |
 | [0006](0006-desktop-environment.md) | Use the COSMIC desktop environment | Accepted |
 | [0007](0007-layered-software-delivery.md) | Layered software delivery | Accepted |
+| [0008](0008-declarative-user-state.md) | Declarative user state with chezmoi and Nix | Accepted |
+| [0009](0009-terminal-emulator.md) | Use Warp as the terminal emulator | Accepted |
+| [0010](0010-fuzzy-finding.md) | Use fzf for fuzzy finding | Accepted |
+| [0011](0011-directory-navigation.md) | Use zoxide for directory navigation | Accepted |
