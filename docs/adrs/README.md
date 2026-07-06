@@ -18,3 +18,6 @@ rather than editing history.
 | [0009](0009-terminal-emulator.md) | Use Warp as the terminal emulator | Accepted |
 | [0010](0010-fuzzy-finding.md) | Use fzf for fuzzy finding | Accepted |
 | [0011](0011-directory-navigation.md) | Use zoxide for directory navigation | Accepted |
+| [0012](0012-shell.md) | Use fish as the interactive shell | Accepted |
+| [0013](0013-private-mesh-networking.md) | Use Tailscale for private mesh networking | Accepted |
+| [0014](0014-default-editor.md) | Use Helix as the default editor | Accepted |
