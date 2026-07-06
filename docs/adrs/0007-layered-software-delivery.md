@@ -67,13 +67,6 @@ new machine is reconstituted from image + dotfiles rather than by hand.
 - Is it a development/project toolchain? → **Nix dev shell.**
 - Is it personal config/state? → **chezmoi dotfiles repo.**
 
-### Known exceptions
-
-- **1Password** is currently shipped as an **image RPM**, but by the rule above it
-  *should* be a Flatpak (it is a sandboxable GUI app). It stays an RPM only
-  because the Flatpak build did not allow copying to the clipboard. **It should be
-  moved to Flatpak once that limitation is resolved.**
-
 ### Consequences
 
 - Good: each tier matches software to the right trade-off — reproducibility and

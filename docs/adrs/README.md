@@ -21,3 +21,4 @@ rather than editing history.
 | [0012](0012-shell.md) | Use fish as the interactive shell | Accepted |
 | [0013](0013-private-mesh-networking.md) | Use Tailscale for private mesh networking | Accepted |
 | [0014](0014-default-editor.md) | Use Helix as the default editor | Accepted |
+| [0015](0015-password-management.md) | Password management | Accepted |
