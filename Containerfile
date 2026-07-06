@@ -23,32 +23,43 @@ RUN rm -f /opt && mkdir -p /opt
 RUN dnf5 remove -y firefox firefox-langpacks && dnf5 clean all
 
 # Add Tailscale repo and install tailscale + tailscaled daemon.
+# Ref: ADR-0013 (private-mesh-networking)
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
     dnf5 install -y tailscale && \
     systemctl enable tailscaled.service && \
     dnf5 clean all
 
 # Install helix.
+# Ref: ADR-0014 (default-editor)
 RUN dnf5 install -y helix && dnf5 clean all
 
-# Install zoxide (directory jumper) and fzf (fuzzy finder).
-RUN dnf5 install -y zoxide fzf && dnf5 clean all
+# Install zoxide (directory jumper).
+# Ref: ADR-0011 (directory-navigation)
+RUN dnf5 install -y zoxide && dnf5 clean all
+
+# Install fzf (fuzzy finder).
+# Ref: ADR-0010 (fuzzy-finding)
+RUN dnf5 install -y fzf && dnf5 clean all
 
 # Install Fish shell and set it as the default shell for new users.
+# Ref: ADR-0012 (shell)
 RUN dnf5 install -y fish && \
     echo "/usr/bin/fish" >> /etc/shells && \
     useradd -D --shell /usr/bin/fish && \
     dnf5 clean all
 
 # Install chezmoi for dotfile management.
+# Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
 
 # Add GitHub CLI repo and install gh.
+# Ref: https://github.com/nateinaction/stableOS/issues/41
 RUN dnf5 -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
     dnf5 install -y gh && \
     dnf5 clean all
 
 # Add Claude Code repo and install claude-code.
+# Ref: https://github.com/nateinaction/stableOS/issues/40
 RUN dnf5 -y config-manager addrepo \
         --id=claude-code \
         --set=name="Claude Code" \
@@ -59,6 +70,7 @@ RUN dnf5 -y config-manager addrepo \
     dnf5 clean all
 
 # Add Warp terminal repo and install warp-terminal.
+# Ref: ADR-0009 (terminal-emulator)
 RUN dnf5 -y config-manager addrepo \
         --id=warpdotdev \
         --set=name=warpdotdev \
@@ -69,6 +81,7 @@ RUN dnf5 -y config-manager addrepo \
     dnf5 clean all
 
 # Add 1Password repo and install the 1Password desktop app.
+# Ref: ADR-0015 (password-management)
 RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 -y config-manager addrepo \
         --id=1password \
@@ -82,6 +95,7 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 clean all
 
 # Install Nix (multi-user) and direnv for per-project development environments.
+# Ref: ADR-0008 (declarative-user-state)
 #
 # Nix gives per-project dev shells (`nix develop` against a flake.nix) without
 # rebuilding the image. Fedora 44 ships Nix natively; nix-daemon pulls in
@@ -116,6 +130,7 @@ COPY files/systemd/nix-daemon.service.d/ /usr/lib/systemd/system/nix-daemon.serv
 # unusable. checkpolicy/policycoreutils-devel provide checkmodule and
 # semodule_package; they are build-only, so install, compile, and remove them in
 # one layer. See docs/adrs/0016-nix-store-on-immutable-host.md.
+# Ref: ADR-0008 (declarative-user-state)
 COPY files/selinux/nix-daemon-socket.te /tmp/nix-daemon-socket.te
 RUN dnf5 install -y checkpolicy policycoreutils-devel && \
     checkmodule -M -m -o /tmp/nix-daemon-socket.mod /tmp/nix-daemon-socket.te && \
@@ -131,6 +146,7 @@ RUN dnf5 install -y checkpolicy policycoreutils-devel && \
 RUN systemctl enable nix.mount nix-daemon.socket
 
 # Install the Broadcom wl WiFi driver for MacBook hardware.
+# Ref: https://github.com/nateinaction/stableOS/issues/38
 #
 # broadcom-wl ships as an akmod (source module) that must be compiled against the
 # kernel baked into this image. Two things make this tricky in a container build:
