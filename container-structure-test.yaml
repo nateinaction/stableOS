@@ -8,12 +8,6 @@ metadataTest:
       value: 'Custom Fedora bootc COSMIC desktop environment'
 
 fileExistenceTests:
-  - name: 'COSMIC skeleton config exists'
-    path: '/etc/skel/.config/cosmic/shell.ron'
-    shouldExist: true
-  - name: 'Fish skeleton config exists'
-    path: '/etc/skel/.config/fish/config.fish'
-    shouldExist: true
   - name: 'Flathub setup service exists'
     path: '/usr/lib/systemd/system/flathub-setup.service'
     shouldExist: true
@@ -44,9 +38,6 @@ fileExistenceTests:
   - name: 'nix-direnv direnvrc exists'
     path: '/usr/share/nix-direnv/direnvrc'
     shouldExist: true
-  - name: 'direnv skeleton config exists'
-    path: '/etc/skel/.config/direnv/direnvrc'
-    shouldExist: true
   - name: 'nix bind-mount target directory exists'
     path: '/nix'
     shouldExist: true
@@ -64,33 +55,17 @@ commandTests:
     command: 'command'
     args: ['-v', 'tailscale']
     exitCode: 0
-  - name: 'fish is installed'
-    command: 'command'
-    args: ['-v', 'fish']
-    exitCode: 0
-  - name: 'helix is installed'
-    command: 'command'
-    args: ['-v', 'hx']
-    exitCode: 0
   - name: 'chezmoi is installed'
     command: 'command'
     args: ['-v', 'chezmoi']
     exitCode: 0
-  - name: 'fzf is installed'
-    command: 'command'
-    args: ['-v', 'fzf']
-    exitCode: 0
-  - name: 'zoxide is installed'
-    command: 'command'
-    args: ['-v', 'zoxide']
-    exitCode: 0
-  - name: 'warp-terminal is installed'
-    command: 'command'
-    args: ['-v', 'warp-terminal']
-    exitCode: 0
   - name: '1password is installed'
     command: 'command'
     args: ['-v', '1password']
+    exitCode: 0
+  - name: '1password cli (op) is installed'
+    command: 'command'
+    args: ['-v', 'op']
     exitCode: 0
   - name: 'nix is installed'
     command: 'command'
@@ -103,14 +78,6 @@ commandTests:
   - name: 'broadcom wl kernel module is built'
     command: 'sh'
     args: ['-c', 'find /usr/lib/modules -name "wl.ko*" | grep -q .']
-    exitCode: 0
-  - name: 'fish is registered in /etc/shells'
-    command: 'grep'
-    args: ['-qx', '/usr/bin/fish', '/etc/shells']
-    exitCode: 0
-  - name: 'fish is the default shell for new users'
-    command: 'grep'
-    args: ['-qx', 'SHELL=/usr/bin/fish', '/etc/default/useradd']
     exitCode: 0
   - name: 'tailscaled.service is enabled'
     command: 'systemctl'

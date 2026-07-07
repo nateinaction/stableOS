@@ -4,7 +4,7 @@ LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
 
-# Make /opt usable for RPMs that install there (1Password, Warp, etc.).
+# Make /opt usable for RPMs that install there (1Password, etc.).
 #
 # The base image ships /opt as a symlink to /var/opt (the writable, persistent
 # model). /var/opt does not exist at build time, so RPM's cpio unpack fails with
@@ -29,41 +29,11 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
     systemctl enable tailscaled.service && \
     dnf5 clean all
 
-# Install helix.
-# Ref: ADR-0014 (default-editor)
-RUN dnf5 install -y helix && dnf5 clean all
-
-# Install zoxide (directory jumper).
-# Ref: ADR-0011 (directory-navigation)
-RUN dnf5 install -y zoxide && dnf5 clean all
-
-# Install fzf (fuzzy finder).
-# Ref: ADR-0010 (fuzzy-finding)
-RUN dnf5 install -y fzf && dnf5 clean all
-
-# Install Fish shell and set it as the default shell for new users.
-# Ref: ADR-0012 (shell)
-RUN dnf5 install -y fish && \
-    echo "/usr/bin/fish" >> /etc/shells && \
-    useradd -D --shell /usr/bin/fish && \
-    dnf5 clean all
-
 # Install chezmoi for dotfile management.
 # Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
 
-# Add Warp terminal repo and install warp-terminal.
-# Ref: ADR-0009 (terminal-emulator)
-RUN dnf5 -y config-manager addrepo \
-        --id=warpdotdev \
-        --set=name=warpdotdev \
-        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
-    dnf5 install -y warp-terminal && \
-    dnf5 clean all
-
-# Add 1Password repo and install the 1Password desktop app.
+# Add 1Password repo and install the 1Password desktop app and CLI (`op`).
 # Ref: ADR-0015 (password-management)
 RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 -y config-manager addrepo \
@@ -74,7 +44,7 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
         --set=gpgcheck=1 \
         --set=repo_gpgcheck=1 \
         --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
-    dnf5 install -y 1password && \
+    dnf5 install -y 1password 1password-cli && \
     dnf5 clean all
 
 # Install Nix (multi-user) and direnv for per-project development environments.
@@ -159,9 +129,6 @@ RUN systemctl enable bootc-fetch-apply-updates.timer
 
 # Copy systemd units.
 COPY files/systemd/flathub-setup.service /usr/lib/systemd/system/
-
-# Copy COSMIC skeleton defaults for new users.
-COPY files/skel/ /etc/skel/
 
 # Bake in the cosign public key and container signature policy so installed
 # systems verify this image's signature on every `bootc upgrade`. The policy
