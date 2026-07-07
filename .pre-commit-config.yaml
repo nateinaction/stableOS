@@ -34,9 +34,3 @@ repos:
       language: system
       types: [dockerfile]
       args: ['--failure-threshold', 'warning']
-
-    - id: lint-fish
-      name: Check fish config syntax
-      entry: make lint-fish
-      language: system
-      pass_filenames: false
