@@ -4,7 +4,7 @@ LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
 
-# Make /opt usable for RPMs that install there (1Password, etc.).
+# Make /opt usable for RPMs that install there.
 #
 # The base image ships /opt as a symlink to /var/opt (the writable, persistent
 # model). /var/opt does not exist at build time, so RPM's cpio unpack fails with
@@ -36,9 +36,24 @@ RUN dnf5 install -y fish && \
     useradd -D --shell /usr/bin/fish && \
     dnf5 clean all
 
+# Install helix.
+# Ref: ADR-0014 (default-editor)
+RUN dnf5 install -y helix && dnf5 clean all
+
 # Install chezmoi for dotfile management.
 # Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
+
+# Add Warp terminal repo and install warp-terminal.
+# Ref: ADR-0009 (terminal-emulator)
+RUN dnf5 -y config-manager addrepo \
+        --id=warpdotdev \
+        --set=name=warpdotdev \
+        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
+    dnf5 install -y warp-terminal && \
+    dnf5 clean all
 
 # Add 1Password repo and install the 1Password desktop app and CLI (`op`).
 # Ref: ADR-0015 (password-management)

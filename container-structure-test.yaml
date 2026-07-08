@@ -62,9 +62,17 @@ commandTests:
     command: 'command'
     args: ['-v', 'fish']
     exitCode: 0
+  - name: 'helix is installed'
+    command: 'command'
+    args: ['-v', 'hx']
+    exitCode: 0
   - name: 'chezmoi is installed'
     command: 'command'
     args: ['-v', 'chezmoi']
+    exitCode: 0
+  - name: 'warp-terminal is installed'
+    command: 'command'
+    args: ['-v', 'warp-terminal']
     exitCode: 0
   - name: '1password is installed'
     command: 'command'
