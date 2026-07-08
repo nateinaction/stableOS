@@ -82,7 +82,8 @@ jobs:
       # but the build above ran rootless. Copy the image into root storage so the
       # action's `sudo podman create <ref>` can find it.
       - name: Copy image into root storage for rechunk
-        if: github.ref == 'refs/heads/main'
+        # TODO: rechunk temporarily disabled -- re-enable by restoring this `if`.
+        if: false && github.ref == 'refs/heads/main'
         run: podman save localhost/stableos:latest | sudo podman load
 
       # Repartition into equal-sized package chunks. `prev-ref` (the last published
@@ -91,7 +92,8 @@ jobs:
       # here. rechunk strips the image config, so re-apply the Containerfile LABELs
       # (title/description/source) via `labels` and stamp a YYMMDD version.
       - name: Rechunk image
-        if: github.ref == 'refs/heads/main'
+        # TODO: rechunk temporarily disabled -- re-enable by restoring this `if`.
+        if: false && github.ref == 'refs/heads/main'
         id: rechunk
         uses: hhd-dev/rechunk@5fbe1d3a639615d2548d83bc888360de6267b1a2 # v1.2.4
         with:
@@ -108,7 +110,8 @@ jobs:
       # storage. Pull it back into rootless storage and re-tag it to the names the
       # push step expects, so we publish the rechunked image rather than the original.
       - name: Load rechunked image
-        if: github.ref == 'refs/heads/main'
+        # TODO: rechunk temporarily disabled -- re-enable by restoring this `if`.
+        if: false && github.ref == 'refs/heads/main'
         run: |
           IMAGE_ID=$(podman pull "${{ steps.rechunk.outputs.ref }}")
           podman tag "$IMAGE_ID" stableos:latest
