@@ -5,10 +5,12 @@
   ],
   "pinDigests": true,
   "pre-commit": {
-    "enabled": true
+    "enabled": true,
+    "pinDigests": false
   },
   "nix": {
-    "enabled": true
+    "enabled": true,
+    "pinDigests": false
   },
   "automerge": true,
   "automergeType": "pr",
