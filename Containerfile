@@ -29,6 +29,13 @@ RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/st
     systemctl enable tailscaled.service && \
     dnf5 clean all
 
+# Install Fish shell and set it as the default shell for new users.
+# Ref: ADR-0012 (shell)
+RUN dnf5 install -y fish && \
+    echo "/usr/bin/fish" >> /etc/shells && \
+    useradd -D --shell /usr/bin/fish && \
+    dnf5 clean all
+
 # Install chezmoi for dotfile management.
 # Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
@@ -129,6 +136,9 @@ RUN systemctl enable bootc-fetch-apply-updates.timer
 
 # Copy systemd units.
 COPY files/systemd/flathub-setup.service /usr/lib/systemd/system/
+
+# Copy skeleton defaults for new users.
+COPY files/skel/ /etc/skel/
 
 # Bake in the cosign public key and container signature policy so installed
 # systems verify this image's signature on every `bootc upgrade`. The policy

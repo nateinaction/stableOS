@@ -23,6 +23,7 @@
             gnumake
             hadolint
             container-structure-test
+            fish
             pre-commit
           ];
 

@@ -9,7 +9,7 @@ IMAGE_TAG ?= latest
 CONTAINERFILE ?= ./Containerfile
 PLATFORM ?= linux/amd64
 
-# Dev/lint/test tools (hadolint, container-structure-test, pre-commit)
+# Dev/lint/test tools (hadolint, container-structure-test, fish, pre-commit)
 # come from the flake.nix dev shell -- run inside `nix develop` / direnv so they
 # are on PATH. podman ships in the Fedora Atomic base OS and is preinstalled on
 # CI runners; override PODMAN to point elsewhere if needed.
@@ -71,6 +71,10 @@ pre-commit-install: ## Install pre-commit hooks
 .PHONY: fmt
 fmt: pre-commit-install ## Run pre-commit hooks against all files
 	pre-commit run --all-files
+
+.PHONY: lint-fish
+lint-fish: ## Check fish config syntax
+	fish --no-execute files/skel/.config/fish/config.fish
 
 ##@ Testing
 
