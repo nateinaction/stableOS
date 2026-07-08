@@ -55,6 +55,10 @@ RUN dnf5 -y config-manager addrepo \
     dnf5 install -y warp-terminal && \
     dnf5 clean all
 
+# Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
+# Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
+RUN dnf5 install -y alacritty && dnf5 clean all
+
 # Add 1Password repo and install the 1Password desktop app and CLI (`op`).
 # Ref: ADR-0015 (password-management)
 RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
