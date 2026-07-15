@@ -74,6 +74,12 @@ RUN dnf5 install -y checkpolicy policycoreutils-devel && \
     dnf5 clean all && \
     rm -f /tmp/nix-daemon-socket.te /tmp/nix-daemon-socket.mod /tmp/nix-daemon-socket.pp
 
+# Copy systemd units.
+COPY files/systemd/flathub-setup.service /usr/lib/systemd/system/
+
+# Enable first-boot Flathub setup.
+RUN systemctl enable flathub-setup.service
+
 # Enable the Nix store bind mount and the socket-activated daemon. nix.mount
 # pulls in nix-store-init.service via its Requires=, so enabling the mount is
 # enough; the daemon is socket-activated.
@@ -112,9 +118,6 @@ COPY files/modules-load.d/applesmc.conf /usr/lib/modules-load.d/
 
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
-
-# Copy systemd units.
-COPY files/systemd/flathub-setup.service /usr/lib/systemd/system/
 
 # Copy skeleton defaults for new users.
 COPY files/skel/ /etc/skel/
@@ -178,9 +181,6 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
         --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
     dnf5 clean all
-
-# Enable first-boot Flathub setup.
-RUN systemctl enable flathub-setup.service
 
 # Ensure image is valid for bootc/image-mode.
 RUN bootc container lint
