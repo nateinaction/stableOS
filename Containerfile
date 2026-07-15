@@ -4,6 +4,14 @@ LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
       source="https://github.com/nateinaction/stableOS"
 
+# Bake in the cosign public key and container signature policy so installed
+# systems verify this image's signature on every `bootc upgrade`. The policy
+# leaves the default permissive (base/flatpak/other pulls keep working) and
+# only *requires* a valid signature for ghcr.io/nateinaction/stableos.
+COPY cosign.pub /etc/pki/containers/stableos.pub
+COPY files/containers/policy.json /etc/containers/policy.json
+COPY files/containers/registries.d/ /etc/containers/registries.d/
+
 # Make /opt usable for RPMs that install there.
 #
 # The base image ships /opt as a symlink to /var/opt (the writable, persistent
@@ -119,14 +127,6 @@ COPY files/modules-load.d/applesmc.conf /usr/lib/modules-load.d/
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
 
-# Add Tailscale repo and install tailscale + tailscaled daemon.
-# Ref: ADR-0013 (private-mesh-networking)
-RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
-    rpm --import https://pkgs.tailscale.com/stable/fedora/repo.gpg && \
-    dnf5 install -y tailscale && \
-    systemctl enable tailscaled.service && \
-    dnf5 clean all
-
 # Install Fish shell and set it as the default shell for new users.
 # Ref: ADR-0012 (shell)
 RUN dnf5 install -y fish && \
@@ -138,24 +138,21 @@ RUN dnf5 install -y fish && \
 # Ref: ADR-0014 (default-editor)
 RUN dnf5 install -y helix && dnf5 clean all
 
-# Install chezmoi for dotfile management.
-# Ref: ADR-0008 (declarative-user-state)
-RUN dnf5 install -y chezmoi && dnf5 clean all
-
-# Add Warp terminal repo and install warp-terminal.
-# Ref: ADR-0009 (terminal-emulator)
-RUN dnf5 -y config-manager addrepo \
-        --id=warpdotdev \
-        --set=name=warpdotdev \
-        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
-    dnf5 install -y warp-terminal && \
-    dnf5 clean all
-
 # Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
 # Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
 RUN dnf5 install -y alacritty && dnf5 clean all
+
+# Add Tailscale repo and install tailscale + tailscaled daemon.
+# Ref: ADR-0013 (private-mesh-networking)
+RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
+    rpm --import https://pkgs.tailscale.com/stable/fedora/repo.gpg && \
+    dnf5 install -y tailscale && \
+    systemctl enable tailscaled.service && \
+    dnf5 clean all
+
+# Install chezmoi for dotfile management.
+# Ref: ADR-0008 (declarative-user-state)
+RUN dnf5 install -y chezmoi && dnf5 clean all
 
 # Add 1Password repo and install the 1Password desktop app and CLI (`op`).
 # Ref: ADR-0015 (password-management)
@@ -171,16 +168,19 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
     dnf5 clean all
 
+# Add Warp terminal repo and install warp-terminal.
+# Ref: ADR-0009 (terminal-emulator)
+RUN dnf5 -y config-manager addrepo \
+        --id=warpdotdev \
+        --set=name=warpdotdev \
+        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
+    dnf5 install -y warp-terminal && \
+    dnf5 clean all
+
 # Copy skeleton defaults for new users.
 COPY files/skel/ /etc/skel/
-
-# Bake in the cosign public key and container signature policy so installed
-# systems verify this image's signature on every `bootc upgrade`. The policy
-# leaves the default permissive (base/flatpak/other pulls keep working) and
-# only *requires* a valid signature for ghcr.io/nateinaction/stableos.
-COPY cosign.pub /etc/pki/containers/stableos.pub
-COPY files/containers/policy.json /etc/containers/policy.json
-COPY files/containers/registries.d/ /etc/containers/registries.d/
 
 # Ensure image is valid for bootc/image-mode.
 RUN bootc container lint
