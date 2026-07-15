@@ -1,7 +1,7 @@
 FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:7fac154d5b0e3bdf4e0818744d58e5e3a210ca70192ef754310ddf8cebc5632b
 
 LABEL title="stableOS" \
-      description="Custom Fedora bootc COSMIC desktop environment" \
+      description="Immutable, reproducible Fedora bootc desktop with COSMIC" \
       source="https://github.com/nateinaction/stableOS"
 
 # Bake in the cosign public key and container signature policy so installed
@@ -173,16 +173,6 @@ COPY files/skel/ /etc/skel/
 
 # Replace GNU coreutils with uutils-coreutils, a memory-safe Rust
 # reimplementation. Ref: ADR-0019 (rust-uutils-coreutils)
-#
-# Fedora ships uutils-coreutils as an opt-in package installed alongside GNU
-# coreutils under a uu_-prefixed namespace (/usr/bin/uu_ls, /usr/bin/uu_cp,
-# ...) rather than obsoleting it, so there's no `dnf swap` path. Retarget
-# every /usr/bin/<tool> it provides at its uu_ equivalent so the Rust
-# implementation is what actually runs everywhere. The coreutils package
-# itself is left installed (unused, but satisfies dependency resolution for
-# anything that still requires it) since removing it isn't safe this late in
-# the build. Run this last so an incompatibility surfaces here rather than
-# breaking an earlier build step that still expects GNU behavior.
 RUN dnf5 install -y uutils-coreutils && \
     for uu in /usr/bin/uu_*; do \
         name="$(basename "${uu}")" && \
