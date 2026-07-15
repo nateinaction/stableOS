@@ -3,7 +3,7 @@
 - Status: accepted
 - Date: 2026-07-14
 - Deciders: nateinaction
-- Guiding principles: [Prefer Memory-Safe Tooling](../ARCHITECTURE.md#3-prefer-memory-safe-tooling), [Layered Software Delivery](../ARCHITECTURE.md#4-layered-software-delivery), [Prefer Responsive, Low-Overhead Tooling for Interactive Use](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling-for-interactive-use)
+- Guiding principles: [Prefer Memory-Safe Tooling](../ARCHITECTURE.md#3-prefer-memory-safe-tooling), [Layered Software Delivery](../ARCHITECTURE.md#4-layered-software-delivery), [Prefer Responsive, Low-Overhead Tooling](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling)
 - Supersedes: [ADR 0009](0009-terminal-emulator.md)
 
 ## Context and Problem Statement
@@ -17,7 +17,7 @@ to be compared directly on real day-to-day use before picking one.
 That comparison is done. Warp's day-to-day performance did not hold up against
 Alacritty's: Alacritty is noticeably lighter and more responsive as an
 always-running, always-focused process, which is exactly what
-[principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling-for-interactive-use)
+[principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling)
 cares about for this class of tool. Warp's AI features were the reason it was
 chosen in the first place, but they don't outweigh a terminal that is slower
 to use for every single interactive session.
@@ -40,7 +40,7 @@ Chosen: **Alacritty**. Warp is dropped from the image.
 The head-to-head trial settled the question ADR 0009 left open: raw
 interactive performance matters more day to day than Warp's AI-assisted
 command prediction, and Alacritty wins clearly on performance, per
-[principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling-for-interactive-use).
+[principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling).
 Memory safety ([principle 3](../ARCHITECTURE.md#3-prefer-memory-safe-tooling))
 was already satisfied by both candidates, so it doesn't distinguish them
 here — performance does. This also removes the account-gated AI dependency
@@ -53,7 +53,7 @@ deciding one.
   [principle 3](../ARCHITECTURE.md#3-prefer-memory-safe-tooling).
 - Good: lighter, faster interactive performance for an always-running,
   always-focused process, satisfying
-  [principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling-for-interactive-use) —
+  [principle 9](../ARCHITECTURE.md#9-prefer-responsive-low-overhead-tooling) —
   the deciding factor.
 - Good: no account or cloud login required for any terminal feature; no
   telemetry surface on the OS's primary interface.
