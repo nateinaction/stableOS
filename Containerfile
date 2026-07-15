@@ -168,9 +168,6 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
     dnf5 clean all
 
-# Copy skeleton defaults for new users.
-COPY files/skel/ /etc/skel/
-
 # Replace GNU coreutils with uutils-coreutils, a memory-safe Rust
 # reimplementation. Ref: ADR-0019 (rust-uutils-coreutils)
 RUN dnf5 install -y uutils-coreutils && \
@@ -179,6 +176,9 @@ RUN dnf5 install -y uutils-coreutils && \
         ln -sf "${uu}" "/usr/bin/${name#uu_}"; \
     done && \
     dnf5 clean all
+
+# Copy skeleton defaults for new users.
+COPY files/skel/ /etc/skel/
 
 # Ensure image is valid for bootc/image-mode.
 RUN bootc container lint
