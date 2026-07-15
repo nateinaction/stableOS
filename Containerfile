@@ -17,72 +17,16 @@ LABEL title="stableOS" \
 # https://github.com/bootc-dev/bootc/discussions/1038
 RUN rm -f /opt && mkdir -p /opt
 
-# Remove the Firefox RPM shipped by the base image. Firefox is installed as a
-# Flatpak (org.mozilla.firefox) instead — see README — so the base RPM is a
-# redundant, separately-updated duplicate.
-RUN dnf5 remove -y firefox firefox-langpacks && dnf5 clean all
-
-# Add Tailscale repo and install tailscale + tailscaled daemon.
-# Ref: ADR-0013 (private-mesh-networking)
-RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
-    rpm --import https://pkgs.tailscale.com/stable/fedora/repo.gpg && \
-    dnf5 install -y tailscale && \
-    systemctl enable tailscaled.service && \
-    dnf5 clean all
-
-# Install Fish shell and set it as the default shell for new users.
-# Ref: ADR-0012 (shell)
-RUN dnf5 install -y fish && \
-    echo "/usr/bin/fish" >> /etc/shells && \
-    useradd -D --shell /usr/bin/fish && \
-    dnf5 clean all
-
-# Install helix.
-# Ref: ADR-0014 (default-editor)
-RUN dnf5 install -y helix && dnf5 clean all
-
-# Install chezmoi for dotfile management.
-# Ref: ADR-0008 (declarative-user-state)
-RUN dnf5 install -y chezmoi && dnf5 clean all
-
-# Add Warp terminal repo and install warp-terminal.
-# Ref: ADR-0009 (terminal-emulator)
-RUN dnf5 -y config-manager addrepo \
-        --id=warpdotdev \
-        --set=name=warpdotdev \
-        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
-    dnf5 install -y warp-terminal && \
-    dnf5 clean all
-
-# Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
-# Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
-RUN dnf5 install -y alacritty && dnf5 clean all
-
 # Make /usr/local usable for RPMs that install there.
 #
 # The base image ships /usr/local as a symlink to /var/usrlocal (the writable,
-# persistent model). /var/usrlocal does not exist at build time, so 1Password's
-# %post scriptlet fails with "mkdir: cannot create directory '/usr/local': File
-# exists" (mkdir doesn't follow an existing symlink at the target path), which
-# aborts the dnf5 transaction even though RPM flags the error non-critical.
-# Same fix as /opt above: make it a real directory before installing.
+# persistent model). /var/usrlocal does not exist at build time, so RPMs whose
+# %post scriptlets write there (e.g. a bare `mkdir /usr/local`) fail with
+# "mkdir: cannot create directory '/usr/local': File exists" (mkdir doesn't
+# follow an existing symlink at the target path), which aborts the dnf5
+# transaction even when RPM flags the error non-critical. Same fix as /opt
+# above: make it a real directory before installing anything.
 RUN rm -f /usr/local && mkdir -p /usr/local
-
-# Add 1Password repo and install the 1Password desktop app and CLI (`op`).
-# Ref: ADR-0015 (password-management)
-RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
-    dnf5 -y config-manager addrepo \
-        --id=1password \
-        --set=name="1Password Stable Channel" \
-        --set=baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch \
-        --set=enabled=1 \
-        --set=gpgcheck=1 \
-        --set=repo_gpgcheck=1 \
-        --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
-    dnf5 install -y 1password 1password-cli && \
-    dnf5 clean all
 
 # Install Nix (multi-user) and direnv for per-project development environments.
 # Ref: ADR-0008 (declarative-user-state)
@@ -135,6 +79,11 @@ RUN dnf5 install -y checkpolicy policycoreutils-devel && \
 # enough; the daemon is socket-activated.
 RUN systemctl enable nix.mount nix-daemon.socket
 
+# Remove the Firefox RPM shipped by the base image. Firefox is installed as a
+# Flatpak (org.mozilla.firefox) instead — see README — so the base RPM is a
+# redundant, separately-updated duplicate.
+RUN dnf5 remove -y firefox firefox-langpacks && dnf5 clean all
+
 # Install the Broadcom wl WiFi driver for MacBook hardware.
 # Ref: https://github.com/nateinaction/stableOS/issues/38
 #
@@ -177,6 +126,58 @@ COPY files/skel/ /etc/skel/
 COPY cosign.pub /etc/pki/containers/stableos.pub
 COPY files/containers/policy.json /etc/containers/policy.json
 COPY files/containers/registries.d/ /etc/containers/registries.d/
+
+# Add Tailscale repo and install tailscale + tailscaled daemon.
+# Ref: ADR-0013 (private-mesh-networking)
+RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
+    rpm --import https://pkgs.tailscale.com/stable/fedora/repo.gpg && \
+    dnf5 install -y tailscale && \
+    systemctl enable tailscaled.service && \
+    dnf5 clean all
+
+# Install Fish shell and set it as the default shell for new users.
+# Ref: ADR-0012 (shell)
+RUN dnf5 install -y fish && \
+    echo "/usr/bin/fish" >> /etc/shells && \
+    useradd -D --shell /usr/bin/fish && \
+    dnf5 clean all
+
+# Install helix.
+# Ref: ADR-0014 (default-editor)
+RUN dnf5 install -y helix && dnf5 clean all
+
+# Install chezmoi for dotfile management.
+# Ref: ADR-0008 (declarative-user-state)
+RUN dnf5 install -y chezmoi && dnf5 clean all
+
+# Add Warp terminal repo and install warp-terminal.
+# Ref: ADR-0009 (terminal-emulator)
+RUN dnf5 -y config-manager addrepo \
+        --id=warpdotdev \
+        --set=name=warpdotdev \
+        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
+        --set=gpgcheck=1 \
+        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
+    dnf5 install -y warp-terminal && \
+    dnf5 clean all
+
+# Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
+# Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
+RUN dnf5 install -y alacritty && dnf5 clean all
+
+# Add 1Password repo and install the 1Password desktop app and CLI (`op`).
+# Ref: ADR-0015 (password-management)
+RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 -y config-manager addrepo \
+        --id=1password \
+        --set=name="1Password Stable Channel" \
+        --set=baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch \
+        --set=enabled=1 \
+        --set=gpgcheck=1 \
+        --set=repo_gpgcheck=1 \
+        --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
+    dnf5 install -y 1password 1password-cli && \
+    dnf5 clean all
 
 # Enable first-boot Flathub setup.
 RUN systemctl enable flathub-setup.service
