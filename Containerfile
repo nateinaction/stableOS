@@ -171,5 +171,24 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
 # Copy skeleton defaults for new users.
 COPY files/skel/ /etc/skel/
 
+# Replace GNU coreutils with uutils-coreutils, a memory-safe Rust
+# reimplementation. Ref: ADR-0019 (rust-uutils-coreutils)
+#
+# Fedora ships uutils-coreutils as an opt-in package installed alongside GNU
+# coreutils under a uu_-prefixed namespace (/usr/bin/uu_ls, /usr/bin/uu_cp,
+# ...) rather than obsoleting it, so there's no `dnf swap` path. Retarget
+# every /usr/bin/<tool> it provides at its uu_ equivalent so the Rust
+# implementation is what actually runs everywhere. The coreutils package
+# itself is left installed (unused, but satisfies dependency resolution for
+# anything that still requires it) since removing it isn't safe this late in
+# the build. Run this last so an incompatibility surfaces here rather than
+# breaking an earlier build step that still expects GNU behavior.
+RUN dnf5 install -y uutils-coreutils && \
+    for uu in /usr/bin/uu_*; do \
+        name="$(basename "${uu}")" && \
+        ln -sf "${uu}" "/usr/bin/${name#uu_}"; \
+    done && \
+    dnf5 clean all
+
 # Ensure image is valid for bootc/image-mode.
 RUN bootc container lint
