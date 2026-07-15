@@ -139,7 +139,7 @@ RUN dnf5 install -y fish && \
 RUN dnf5 install -y helix && dnf5 clean all
 
 # Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
-# Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
+# Ref: ADR-0017 (terminal-emulator)
 RUN dnf5 install -y alacritty && dnf5 clean all
 
 # Add Tailscale repo and install tailscale + tailscaled daemon.
@@ -166,17 +166,6 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
         --set=repo_gpgcheck=1 \
         --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
-    dnf5 clean all
-
-# Add Warp terminal repo and install warp-terminal.
-# Ref: ADR-0009 (terminal-emulator)
-RUN dnf5 -y config-manager addrepo \
-        --id=warpdotdev \
-        --set=name=warpdotdev \
-        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
-    dnf5 install -y warp-terminal && \
     dnf5 clean all
 
 # Copy skeleton defaults for new users.

@@ -70,10 +70,6 @@ commandTests:
     command: 'command'
     args: ['-v', 'chezmoi']
     exitCode: 0
-  - name: 'warp-terminal is installed'
-    command: 'command'
-    args: ['-v', 'warp-terminal']
-    exitCode: 0
   - name: 'alacritty is installed'
     command: 'command'
     args: ['-v', 'alacritty']

@@ -72,6 +72,16 @@ The build defines the OS, not the person using it. User state — dotfiles, appl
 - User state is expressed declaratively so it can be version-controlled, audited, and reapplied on a fresh machine.
 - Separating user state from the system image keeps upgrades clean and avoids coupling a person's preferences to the OS release cycle.
 
+### 9. Prefer Responsive, Low-Overhead Tooling
+
+When choosing software for the OS, prefer the option that is faster and
+lighter, all else being roughly equal. This is a strong tiebreaker, not an
+absolute rule; correctness, safety, and features may still override it.
+
+**Rationale:** Overhead compounds across a system that is always running, so
+a lighter default keeps the whole machine snappier and leaves more headroom
+for everything else sharing it.
+
 ## Decision-Making Workflow
 
 1. **Small decisions, tactical questions:** Settled inline in code. Update this file if a new principle emerges.
