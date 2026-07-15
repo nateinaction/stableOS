@@ -1,6 +1,6 @@
 # Use Warp as the terminal emulator
 
-- Status: accepted
+- Status: superseded by [ADR 0017](0017-terminal-emulator-alacritty.md)
 - Date: 2026-07-05
 - Deciders: nateinaction
 - Guiding principles: [Prefer Memory-Safe Tooling](../ARCHITECTURE.md#3-prefer-memory-safe-tooling), [Layered Software Delivery](../ARCHITECTURE.md#4-layered-software-delivery)

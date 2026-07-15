@@ -44,19 +44,8 @@ RUN dnf5 install -y helix && dnf5 clean all
 # Ref: ADR-0008 (declarative-user-state)
 RUN dnf5 install -y chezmoi && dnf5 clean all
 
-# Add Warp terminal repo and install warp-terminal.
-# Ref: ADR-0009 (terminal-emulator)
-RUN dnf5 -y config-manager addrepo \
-        --id=warpdotdev \
-        --set=name=warpdotdev \
-        --set=baseurl=https://releases.warp.dev/linux/rpm/stable \
-        --set=gpgcheck=1 \
-        --set=gpgkey=https://releases.warp.dev/linux/keys/warp.asc && \
-    dnf5 install -y warp-terminal && \
-    dnf5 clean all
-
 # Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
-# Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
+# Ref: ADR-0017 (terminal-emulator-alacritty)
 RUN dnf5 install -y alacritty && dnf5 clean all
 
 # Add 1Password repo and install the 1Password desktop app and CLI (`op`).

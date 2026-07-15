@@ -1,6 +1,6 @@
 # Use fzf for fuzzy finding
 
-- Status: accepted
+- Status: superseded by [ADR 0018](0018-remove-fuzzy-finding-and-directory-navigation.md)
 - Date: 2026-07-05
 - Deciders: nateinaction
 - Guiding principles: [Prefer Memory-Safe Tooling](../ARCHITECTURE.md#3-prefer-memory-safe-tooling), [One Way to Do Things](../ARCHITECTURE.md#7-one-way-to-do-things)

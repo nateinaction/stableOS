@@ -47,7 +47,6 @@ stableOS includes a curated set of applications and tools baked into the image:
 
 - **Tailscale** — Secure networking daemon (run `sudo tailscale up` after first boot to configure).
 - **chezmoi** — Dotfile manager for reproducible, versioned user configuration.
-- **Warp** — Modern Rust-based terminal with AI and collaboration features (launch from the app grid or run `warp-terminal`).
 - **Alacritty** — Fast, GPU-accelerated terminal emulator (launch from the app grid or run `alacritty`).
 - **1Password** — Password manager + browser extension (installed via the official 1Password RPM repo).
 - **Nix + direnv** — Multi-user Nix package manager for per-project development environments (see [Nix development environments](#nix-development-environments)).
