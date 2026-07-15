@@ -119,17 +119,6 @@ COPY files/modules-load.d/applesmc.conf /usr/lib/modules-load.d/
 # Enable automatic image updates via bootc.
 RUN systemctl enable bootc-fetch-apply-updates.timer
 
-# Copy skeleton defaults for new users.
-COPY files/skel/ /etc/skel/
-
-# Bake in the cosign public key and container signature policy so installed
-# systems verify this image's signature on every `bootc upgrade`. The policy
-# leaves the default permissive (base/flatpak/other pulls keep working) and
-# only *requires* a valid signature for ghcr.io/nateinaction/stableos.
-COPY cosign.pub /etc/pki/containers/stableos.pub
-COPY files/containers/policy.json /etc/containers/policy.json
-COPY files/containers/registries.d/ /etc/containers/registries.d/
-
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 # Ref: ADR-0013 (private-mesh-networking)
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
@@ -181,6 +170,17 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
         --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
     dnf5 clean all
+
+# Copy skeleton defaults for new users.
+COPY files/skel/ /etc/skel/
+
+# Bake in the cosign public key and container signature policy so installed
+# systems verify this image's signature on every `bootc upgrade`. The policy
+# leaves the default permissive (base/flatpak/other pulls keep working) and
+# only *requires* a valid signature for ghcr.io/nateinaction/stableos.
+COPY cosign.pub /etc/pki/containers/stableos.pub
+COPY files/containers/policy.json /etc/containers/policy.json
+COPY files/containers/registries.d/ /etc/containers/registries.d/
 
 # Ensure image is valid for bootc/image-mode.
 RUN bootc container lint
