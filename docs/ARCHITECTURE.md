@@ -72,6 +72,17 @@ The build defines the OS, not the person using it. User state — dotfiles, appl
 - User state is expressed declaratively so it can be version-controlled, audited, and reapplied on a fresh machine.
 - Separating user state from the system image keeps upgrades clean and avoids coupling a person's preferences to the OS release cycle.
 
+### 9. Prefer Responsive, Low-Overhead Tooling for Interactive Use
+
+For software in the interactive hot path — the terminal, shell, editor, and
+other always-running, always-focused tools — prefer the option that is faster
+and lighter, all else being roughly equal. This is a strong tiebreaker, not an
+absolute rule; correctness, safety, and features may still override it.
+
+**Rationale:** These tools are used continuously through every session, so a
+sluggish default degrades daily use far more than the same overhead would in
+an occasional or backgrounded tool.
+
 ## Decision-Making Workflow
 
 1. **Small decisions, tactical questions:** Settled inline in code. Update this file if a new principle emerges.
