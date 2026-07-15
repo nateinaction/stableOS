@@ -61,8 +61,3 @@ image.
 - Bad: the corresponding fish key bindings and skel defaults for these tools
   no longer ship in `/etc/skel`; new local users without a dotfiles setup
   start without them.
-
-### Revisit Triggers
-
-- If some future image RPM or system service comes to depend on fzf or
-  zoxide directly, move it back into the image layer and supersede this ADR.
