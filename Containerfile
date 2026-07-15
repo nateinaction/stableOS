@@ -25,6 +25,7 @@ RUN dnf5 remove -y firefox firefox-langpacks && dnf5 clean all
 # Add Tailscale repo and install tailscale + tailscaled daemon.
 # Ref: ADR-0013 (private-mesh-networking)
 RUN dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo && \
+    rpm --import https://pkgs.tailscale.com/stable/fedora/repo.gpg && \
     dnf5 install -y tailscale && \
     systemctl enable tailscaled.service && \
     dnf5 clean all
@@ -58,6 +59,16 @@ RUN dnf5 -y config-manager addrepo \
 # Install Alacritty, a minimal memory-safe (Rust) terminal emulator.
 # Ref: ADR-0009 (terminal-emulator) — the account-free fallback to Warp.
 RUN dnf5 install -y alacritty && dnf5 clean all
+
+# Make /usr/local usable for RPMs that install there.
+#
+# The base image ships /usr/local as a symlink to /var/usrlocal (the writable,
+# persistent model). /var/usrlocal does not exist at build time, so 1Password's
+# %post scriptlet fails with "mkdir: cannot create directory '/usr/local': File
+# exists" (mkdir doesn't follow an existing symlink at the target path), which
+# aborts the dnf5 transaction even though RPM flags the error non-critical.
+# Same fix as /opt above: make it a real directory before installing.
+RUN rm -f /usr/local && mkdir -p /usr/local
 
 # Add 1Password repo and install the 1Password desktop app and CLI (`op`).
 # Ref: ADR-0015 (password-management)
