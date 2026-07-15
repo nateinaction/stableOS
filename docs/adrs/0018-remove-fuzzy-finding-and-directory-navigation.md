@@ -55,9 +55,3 @@ image.
 - Good: two fewer packages in the image's build, update, and CVE surface.
 - Good: users can choose their own version/cadence for fzf and zoxide (or skip
   them entirely) without waiting on an image release.
-- Bad: fzf and zoxide are no longer available out of the box on a fresh
-  install; a user must apply their dotfiles
-  (`chezmoi init --apply nateinaction`, per the README) to get them.
-- Bad: the corresponding fish key bindings and skel defaults for these tools
-  no longer ship in `/etc/skel`; new local users without a dotfiles setup
-  start without them.
