@@ -1,4 +1,4 @@
-FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:181c937c0654a5745e9728543b1dd217ab02f1b886780f99b8427eb2de9b3651
+FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:92212f449d6b290daa8b3bd60568f2b67170633ff000baccb141b35512caad99
 
 LABEL title="stableOS" \
       description="Custom Fedora bootc COSMIC desktop environment" \
