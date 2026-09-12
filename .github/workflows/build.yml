@@ -31,7 +31,7 @@ jobs:
       # the same flake.nix dev shell used locally -- one dependency manifest for
       # local and CI. `nix develop -c` runs the target inside that shell.
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
       - name: Run pre-commit hooks
         run: nix develop -c make fmt
@@ -49,7 +49,7 @@ jobs:
       # manifest as local); `podman build` below uses the runner's preinstalled
       # podman directly.
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
       # Build with podman into containers-storage, matching local `make build`.
       # Always tag :latest so the structure tests have a stable ref to target;
