@@ -1,7 +1,7 @@
 FROM quay.io/fedora-ostree-desktops/cosmic-atomic:44@sha256:ed0ea941a081a400858ce5fea5b488b13e26c726478130df8588b3ec88588177
 
 LABEL title="stableOS" \
-      description="Custom Fedora bootc COSMIC desktop environment" \
+      description="Immutable, reproducible Fedora bootc desktop with COSMIC" \
       source="https://github.com/nateinaction/stableOS"
 
 # Bake in the cosign public key and container signature policy so installed
@@ -166,6 +166,15 @@ RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
         --set=repo_gpgcheck=1 \
         --set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc && \
     dnf5 install -y 1password 1password-cli && \
+    dnf5 clean all
+
+# Replace GNU coreutils with uutils-coreutils, a memory-safe Rust
+# reimplementation. Ref: ADR-0019 (rust-uutils-coreutils)
+RUN dnf5 install -y uutils-coreutils && \
+    for uu in /usr/bin/uu_*; do \
+        name="$(basename "${uu}")" && \
+        ln -sf "${uu}" "/usr/bin/${name#uu_}"; \
+    done && \
     dnf5 clean all
 
 # Copy skeleton defaults for new users.

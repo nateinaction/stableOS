@@ -25,3 +25,4 @@ rather than editing history.
 | [0016](0016-nix-store-on-immutable-host.md) | Hosting the Nix store on an immutable host | Accepted |
 | [0017](0017-terminal-emulator-alacritty.md) | Use Alacritty as the terminal emulator | Accepted |
 | [0018](0018-remove-fuzzy-finding-and-directory-navigation.md) | Remove fzf and zoxide from the image | Accepted |
+| [0019](0019-rust-uutils-coreutils.md) | Replace GNU coreutils with uutils-coreutils | Accepted |
