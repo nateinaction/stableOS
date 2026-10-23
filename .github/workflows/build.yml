@@ -39,7 +39,7 @@ jobs:
   build:
     # Pin to 24.04: the rechunk step below runs rootful podman (podman mount),
     # which the rechunk action supports only on ubuntu-24.04, not -latest.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: lint
 
     steps:
