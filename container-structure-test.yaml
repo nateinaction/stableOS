@@ -5,7 +5,7 @@ metadataTest:
     - key: title
       value: stableOS
     - key: description
-      value: 'Custom Fedora bootc COSMIC desktop environment'
+      value: 'Immutable, reproducible Fedora bootc desktop with COSMIC'
 
 fileExistenceTests:
   - name: 'Fish skeleton config exists'
@@ -139,3 +139,23 @@ commandTests:
     command: 'rpm'
     args: ['-q', 'firefox']
     exitCode: 1
+  - name: 'ls is uutils coreutils'
+    command: 'sh'
+    args: ['-c', 'readlink -f "$(command -v ls)"']
+    expectedOutput: ['/usr/bin/uu_ls']
+    exitCode: 0
+  - name: 'cp is uutils coreutils'
+    command: 'sh'
+    args: ['-c', 'readlink -f "$(command -v cp)"']
+    expectedOutput: ['/usr/bin/uu_cp']
+    exitCode: 0
+  - name: 'mv is uutils coreutils'
+    command: 'sh'
+    args: ['-c', 'readlink -f "$(command -v mv)"']
+    expectedOutput: ['/usr/bin/uu_mv']
+    exitCode: 0
+  - name: 'sort is uutils coreutils'
+    command: 'sh'
+    args: ['-c', 'readlink -f "$(command -v sort)"']
+    expectedOutput: ['/usr/bin/uu_sort']
+    exitCode: 0
